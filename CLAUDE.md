@@ -152,12 +152,12 @@ Estrategia de assets del carrusel (`CarouselSlide.tsx`):
   El resto, `loading="lazy"`.
 
 `MainBanner.tsx`: Server Component. La selección aleatoria del fondo se hace
-en el servidor durante el render. Esto evita el "flash" de hidratación
-(antes mostraba siempre `fondo-oreo.png` y luego saltaba al random). Con
-`revalidate: 30`, el fondo rota cada 30s; todos los usuarios que aciertan
-la misma ventana de revalidación ven el mismo fondo (aceptable; si en el
-futuro se quiere aleatoriedad por usuario habrá que volver a cliente o usar
-cookie con seed).
+a nivel de módulo (fuera del componente) para evitar que el React Compiler
+de Next.js rechace `Math.random()` como función impura dentro del render.
+El fondo rota en cada nuevo deploy o restart del servidor (no por ISR);
+todos los usuarios ven el mismo fondo durante la vida del proceso (aceptable;
+si en el futuro se quiere aleatoriedad por usuario habrá que usar un Client
+Component o una cookie con seed).
 
 ## Despliegue
 
