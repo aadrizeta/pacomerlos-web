@@ -1,7 +1,8 @@
 import BackButton from "@/components/ui/SaboresPage/backButton"
 import DeepLinkScroller from "@/components/ui/SaboresPage/deepLinkScroller"
 import PacoCard from "@/components/ui/SaboresPage/pacoCard"
-import PacoCardMobile from "@/components/ui/SaboresPage/pacoCardMobile"
+// import PacoCardMobile from "@/components/ui/SaboresPage/pacoCardMobile"
+import MobileCatalog from "@/components/ui/SaboresPage/MobileCatalog"
 import StackedCards from "@/components/ui/SaboresPage/stackedCards"
 import { getPaquitos } from "@/lib/directus/queries"
 
@@ -16,19 +17,19 @@ export default async function Sabores() {
 
       <section className="padding-responsive pt-22 md:pt-25 pb-10">
         <BackButton />
-        <h1 className="mt-5 md:text-center font-chunko uppercase text-paco-orange text-4xl md:text-7xl lg:text-8xl">
-          Todos nuestros sabores
-        </h1>
-        <h2 className="mt-4 md:text-center font-now uppercase text-xl md:text-3xl lg:text-4xl">
-          ¡Cuidado! Querrás repetir
-        </h2>
+        <div className="flex flex-col items-center">
+          <h1 className="mt-5 text-center font-chunko uppercase text-paco-orange text-4xl md:text-7xl lg:text-8xl">
+            Nuestros sabores
+          </h1>
+          <h2 className="mt-4 text-center font-now uppercase text-xl md:text-3xl lg:text-4xl">
+            ¡Cuidado! Querrás repetir
+          </h2>
+        </div>
       </section>
 
-      {/* Móvil: cards compactas y desplegables */}
+      {/* Móvil: cards compactas y desplegables (acordeón: una abierta a la vez) */}
       <section className="md:hidden padding-responsive pb-24 flex flex-col gap-4">
-        {paquitos.map((paquito, i) => (
-          <PacoCardMobile key={paquito.id} paquito={paquito} reverse={i % 2 === 1} />
-        ))}
+        <MobileCatalog paquitos={paquitos} />
       </section>
 
       {/* Desktop: pila de cards al hacer scroll */}

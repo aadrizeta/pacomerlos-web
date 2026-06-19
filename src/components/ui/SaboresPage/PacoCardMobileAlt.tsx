@@ -1,18 +1,10 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import Image from 'next/image';
 import type { Paquito } from '@/types/paquitos';
 import { assetUrl } from '@/lib/directus/assets';
 import { normalizeAllergens } from '@/lib/allergens';
-import { slugFromHash } from '@/lib/hashSlug';
 
 const IMG_SRC = 600;
 
@@ -20,91 +12,60 @@ const IMG_SRC = 600;
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
-interface PacoCardMobileProps {
+interface PacoCardMobileAltProps {
   paquito: Paquito;
-  /** Invierte el orden imagen/nombre para el patrón zig-zag */
-  reverse?: boolean;
+  /** Estado controlado por el padre (acordeón: solo una card abierta a la vez). */
+  open: boolean;
+  /** Pide al padre alternar esta card. */
+  onToggle: () => void;
 }
 
-export default function PacoCardMobile({
+/**
+ * Variante de PacoCardMobile SIN zig-zag y CONTROLADA: el estado `open` lo
+ * gestiona el padre (MobileCatalog), que garantiza una sola card abierta.
+ *
+ * La animación FLIP compara la posición/tamaño de la render anterior (`prevRects`)
+ * con la actual cuando `open` cambia. Así anima correctamente tanto la card que
+ * se abre como la que se cierra al abrir otra (no solo la pulsada), sin depender
+ * de capturar medidas en el manejador de click.
+ */
+export default function PacoCardMobileAlt({
   paquito,
-  reverse = false,
-}: PacoCardMobileProps) {
-
-  const subscribeHash = useCallback((onChange: () => void) => {
-    window.addEventListener('hashchange', onChange);
-    return () => window.removeEventListener('hashchange', onChange);
-  }, []);
-  const isHashTarget = useSyncExternalStore(
-    subscribeHash,
-    () => slugFromHash(window.location.hash) === paquito.slug,
-    () => false
-  );
-  const [userOpen, setUserOpen] = useState<boolean | null>(null);
-  const open = userOpen ?? isHashTarget;
-
-  const imgRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLHeadingElement>(null);
-  const firstRects = useRef<{ img: DOMRect | null; name: DOMRect | null }>({
-    img: null,
-    name: null,
-  });
-
+  open,
+  onToggle,
+}: PacoCardMobileAltProps) {
   const accent = paquito.primary_color ?? 'var(--paco-orange)';
   const secondary = paquito.secondary_color ?? 'var(--paco-purple)';
 
   const allergens = normalizeAllergens(paquito.allergens);
   const traces = normalizeAllergens(paquito.cross_contact);
 
-  const toggle = () => {
-    // FIRST: posición/tamaño actuales, justo antes de cambiar el layout.
-    firstRects.current = {
+  const imgRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLHeadingElement>(null);
+  const prevOpen = useRef(open);
+  const prevRects = useRef<{ img: DOMRect | null; name: DOMRect | null }>({
+    img: null,
+    name: null,
+  });
+
+  useIsomorphicLayoutEffect(() => {
+    const last = {
       img: imgRef.current?.getBoundingClientRect() ?? null,
       name: nameRef.current?.getBoundingClientRect() ?? null,
     };
-    setUserOpen(!open);
-  };
 
-  useIsomorphicLayoutEffect(() => {
+    const changed = prevOpen.current !== open;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const flip = (el: HTMLElement | null, first: DOMRect | null) => {
-      if (!el || !first) return;
-      if (reduce) return; // sin animación: el elemento queda ya en su sitio final
+    if (changed && !reduce) {
+      flip(imgRef.current, prevRects.current.img, last.img);
+      flip(nameRef.current, prevRects.current.name, last.name);
+    }
 
-      // LAST: posición/tamaño tras aplicar el nuevo layout.
-      const last = el.getBoundingClientRect();
-      const dx = first.left - last.left;
-      const dy = first.top - last.top;
-      const sx = last.width ? first.width / last.width : 1;
-      const sy = last.height ? first.height / last.height : 1;
-
-      if (
-        Math.abs(dx) < 0.5 &&
-        Math.abs(dy) < 0.5 &&
-        Math.abs(sx - 1) < 0.01 &&
-        Math.abs(sy - 1) < 0.01
-      ) {
-        return;
-      }
-
-      // INVERT: lo devolvemos visualmente a su posición/tamaño anterior…
-      el.style.transformOrigin = 'top left';
-      el.style.transition = 'none';
-      el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-      void el.offsetWidth; // fuerza reflow para fijar el estado inicial
-
-      // PLAY: …y animamos hasta la identidad.
-      requestAnimationFrame(() => {
-        el.style.transition = 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1)';
-        el.style.transform = '';
-      });
-    };
-
-    flip(imgRef.current, firstRects.current.img);
-    flip(nameRef.current, firstRects.current.name);
-    firstRects.current = { img: null, name: null };
-  }, [open]);
+    // Guarda la posición actual como referencia para el próximo cambio.
+    prevRects.current = last;
+    prevOpen.current = open;
+  });
 
   return (
     <article
@@ -115,11 +76,11 @@ export default function PacoCardMobile({
           según `open`; la animación de recolocación la hace el FLIP. */}
       <button
         type="button"
-        onClick={toggle}
+        onClick={onToggle}
         aria-expanded={open}
         className={`relative flex w-full px-3 py-4 text-left ${open
           ? 'flex-col items-center gap-4'
-          : `items-center justify-between gap-4 ${reverse ? 'flex-row-reverse' : ''}`
+          : 'items-center gap-4'
           }`}
       >
         <div
@@ -145,7 +106,7 @@ export default function PacoCardMobile({
 
         <h2
           ref={nameRef}
-          className="font-chunko text-2xl uppercase leading-none text-end"
+          className="font-now font-bold text-2xl uppercase leading-none text-start"
           style={{ color: accent }}
         >
           {paquito.name}
@@ -235,6 +196,37 @@ export default function PacoCardMobile({
       </div>
     </article>
   );
+}
+
+/** FLIP de un elemento desde `first` (posición previa) hasta `last` (actual). */
+function flip(el: HTMLElement | null, first: DOMRect | null, last: DOMRect | null) {
+  if (!el || !first || !last) return;
+
+  const dx = first.left - last.left;
+  const dy = first.top - last.top;
+  const sx = last.width ? first.width / last.width : 1;
+  const sy = last.height ? first.height / last.height : 1;
+
+  if (
+    Math.abs(dx) < 0.5 &&
+    Math.abs(dy) < 0.5 &&
+    Math.abs(sx - 1) < 0.01 &&
+    Math.abs(sy - 1) < 0.01
+  ) {
+    return;
+  }
+
+  // INVERT: lo devolvemos visualmente a su posición/tamaño anterior…
+  el.style.transformOrigin = 'top left';
+  el.style.transition = 'none';
+  el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+  void el.offsetWidth; // fuerza reflow para fijar el estado inicial
+
+  // PLAY: …y animamos hasta la identidad.
+  requestAnimationFrame(() => {
+    el.style.transition = 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1)';
+    el.style.transform = '';
+  });
 }
 
 function AllergenRow({
