@@ -18,6 +18,8 @@ export default function PaquitoHint({ paquito }: PaquitoHintProps) {
       <img
         src={assetUrl(paquito.image_main, { width: 600, format: 'webp', quality: 80 })}
         alt={paquito.name}
+        width={600}
+        height={600}
         loading="lazy"
         decoding="async"
         draggable={false}

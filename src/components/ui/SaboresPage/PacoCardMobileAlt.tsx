@@ -97,6 +97,8 @@ export default function PacoCardMobileAlt({
               quality: 80,
             })}
             alt={paquito.name}
+            width={IMG_SRC}
+            height={IMG_SRC}
             loading="lazy"
             decoding="async"
             draggable={false}

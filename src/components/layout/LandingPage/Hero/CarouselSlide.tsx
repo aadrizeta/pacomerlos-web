@@ -16,6 +16,8 @@ export default function CarouselSlide({ slide, priority = false }: CarouselSlide
         <img
           src={sources.mobile}
           alt=""
+          width={768}
+          height={432}
           loading={priority ? 'eager' : 'lazy'}
           fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"

@@ -38,6 +38,8 @@ export default function PacoCard({ paquito, reverse = false }: PacoCardProps) {
           <img
             src={assetUrl(paquito.image_main, { width: IMG_MOBILE, format: 'webp', quality: 80 })}
             alt={paquito.name}
+            width={IMG_MOBILE}
+            height={IMG_MOBILE}
             loading="lazy"
             decoding="async"
             draggable={false}
