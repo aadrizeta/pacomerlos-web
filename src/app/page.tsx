@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import CarouselSlide from '@/components/layout/LandingPage/Hero/CarouselSlide';
 import HeroCarousel from '@/components/layout/LandingPage/Hero/HeroCarousel';
 import MainBanner from '@/components/layout/LandingPage/Hero/MainBanner';
-import Conector from '@/components/ui/LangingPage/conector';
+import { ConectorTop } from '@/components/ui/LangingPage/conector';
 import { getCarouselSlides, getPaquitos } from '@/lib/directus/queries';
 import { buildCarouselOrder } from '@/utils/carousel-order';
 import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquitosGalery';
+import ConectorMiddle from '@/components/ui/LangingPage/ConectorMiddle';
 
 export const metadata: Metadata = {
   title: "Paquitos Artesanales en Madrid",
@@ -44,8 +45,13 @@ export default async function Home() {
           ))}
         </HeroCarousel>
       </div>
-      <Conector />
+      <ConectorTop />
       <PaquitosGalery paquitos={paquitos} />
+      <ConectorMiddle
+        topText="Ni repostería fina, ni postureo"
+        bottomText="Nosotros nos manchamos las manos"
+        bgColor="var(--paco-orange)"
+      />
     </div>
   );
 }

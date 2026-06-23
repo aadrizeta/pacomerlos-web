@@ -258,11 +258,11 @@ preview, la URL pública. (`LISTMONK_CAMPAIGN_ID` lo usa el Directus Flow, no el
 
 ## ToDo
 
-- [ ] **Rediseñar Footer + formulario de newsletter** (`src/components/layout/Footer/`):
-  modificar y diseñar un nuevo Footer que integre de forma cuidada el formulario de
-  email (`NotifyForm.tsx`). Incluir enlaces a las páginas legales existentes
-  (`/aviso-legal`, `/privacidad`, `/politica-de-cookies`) y el checkbox de
-  consentimiento RGPD (obligatorio, con enlace a `/privacidad`) que ahora falta en `NotifyForm`.
+- [ ] **Probar funcionalidad del formulario con el backend**: verificar el flujo
+  completo de suscripción end-to-end — envío desde `EmailInput.tsx` → Route Handler
+  `/api/notify` → Listmonk Admin API → alta en lista. Comprobar también los casos
+  edge: email ya suscrito (respuesta `alreadySubscribed`), rate-limit (429), honeypot
+  y validación de email inválido.
 - [ ] **Componentes condicionados por `launch_status`**: construir componentes que se
   muestren u oculten según el estado de la página (`coming_soon` | `launched`).
   - `src/types/launch.ts` — `LaunchStatus`, `LaunchSettings`.

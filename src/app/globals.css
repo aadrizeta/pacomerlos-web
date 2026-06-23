@@ -225,7 +225,7 @@ body {
     transition: background-color 0.2s ease, transform 0.2s ease;
   }
   .icon-link:hover{
-    background-color: var(--paco-orange);
+    background-color: var(--hover, var(--paco-orange));
     transform: translateY(-2px);
   }
   .icon-data{
@@ -233,5 +233,163 @@ body {
     background-color: var(--paco-cream);
     -webkit-mask: var(--icon) center / contain no-repeat;
     mask: var(--icon) center / contain no-repeat;
+  }
+  .newsLetter-text{
+    @apply w-full max-w-137 mx-auto lg:flex-1 lg:max-w-none lg:mx-0
+  }
+
+  /* ============================================= */
+  /* ============= SUBSCRIBE FORM ================ */
+  /* ============================================= */
+  .sf-bar {
+    --sf-height: 40px;
+    --sf-radius: 10px;
+    --sf-button-width: 110px;
+    --sf-pad: 12px;
+
+    --sf-bg: #f0f0e6;
+    --sf-text: var(--paco-dark);
+    --sf-button-bg: var(--paco-purple);
+    --sf-button-hover: var(--paco-purple-dark);
+    --sf-button-text: var(--paco-cream);
+    --sf-curtain-bg: #c4a0ff;
+    --sf-success: var(--paco-purple);
+    --sf-error: #e74c3c;
+
+    --sf-curtain-speed: 1s;
+    --sf-button-speed: 0.5s;
+    --sf-input-speed: 0.2s;
+    --sf-result-speed: 0.5s;
+
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    height: var(--sf-height);
+    background: var(--sf-bg);
+    border-radius: var(--sf-radius);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10);
+  }
+
+  .sf-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    height: 100%;
+    width: calc(100% - var(--sf-button-width) - var(--sf-pad));
+    padding: 0 0 0 var(--sf-pad);
+    margin: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--sf-text);
+    font: inherit;
+    line-height: var(--sf-height);
+    box-sizing: border-box;
+    transition: transform var(--sf-input-speed) ease-in-out 0s;
+  }
+
+  .sf-input::placeholder {
+    color: var(--sf-text);
+    opacity: 0.55;
+  }
+
+  .sf-input:focus-visible {
+    box-shadow: inset 0 -2px 0 0 var(--sf-button-bg);
+  }
+
+  .sf-input-active {
+    transform: translateX(calc(100% + var(--sf-button-width) + var(--sf-pad)));
+  }
+
+  .sf-button {
+    position: absolute;
+    top: calc(var(--sf-height) * -1);
+    left: calc(100% - var(--sf-button-width));
+    z-index: 2;
+    width: var(--sf-button-width);
+    height: calc(var(--sf-height) * 3);
+    border: 0;
+    border-top-right-radius: var(--sf-radius);
+    border-bottom-right-radius: var(--sf-radius);
+    background: var(--sf-button-bg);
+    color: var(--sf-button-text);
+    font: inherit;
+    text-align: center;
+    line-height: calc(var(--sf-height) * 3);
+    cursor: pointer;
+    transition: transform var(--sf-button-speed) ease 0s;
+  }
+
+  .sf-button:hover {
+    background: var(--sf-button-hover);
+  }
+
+  .sf-button:disabled {
+    cursor: default;
+  }
+
+  .sf-button-active {
+    transform: translateY(var(--sf-height));
+  }
+
+  .sf-curtain {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    background: var(--sf-curtain-bg);
+    transition: transform var(--sf-curtain-speed) ease 0s;
+  }
+
+  .sf-curtain-active {
+    transform: translateX(100%);
+  }
+
+  .sf-result {
+    position: absolute;
+    top: var(--sf-height);
+    left: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    padding-left: var(--sf-pad);
+    background: transparent;
+    color: var(--sf-success);
+    line-height: var(--sf-height);
+    box-sizing: border-box;
+    transition: transform var(--sf-result-speed) ease 0s;
+  }
+
+  .sf-result-error {
+    color: var(--sf-error);
+  }
+
+  .sf-result-active {
+    transform: translateY(calc(var(--sf-height) * -1));
+  }
+
+  .sf-honeypot {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sf-input,
+    .sf-button,
+    .sf-curtain,
+    .sf-result {
+      transition-duration: 0.01ms;
+    }
   }
 }

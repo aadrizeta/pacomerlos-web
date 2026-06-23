@@ -1,12 +1,17 @@
-export default function Conector() {
+export function ConectorTop() {
   return (
     <div className="relative z-10 bg-paco-purple text-paco-cream">
-      {/* Conector se sobrepone al carrusel (-mt + z-20). El CreamDrip queda
-          en el límite superior del conector, dentro de la zona de solape, así
-          la onda actúa como transición entre carrusel y púrpura sin franja. */}
-      {/* <CreamDrip className="bg-transparent top-0 h-16 md:h-24" /> */}
+      <svg
+        className="pointer-events-none absolute inset-x-0 w-full"
+        style={{ top: '-46px', height: '47px' }}
+        viewBox="0 0 1200 48"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path fill="var(--paco-purple)" d="M0,48 H1200 V30 C1010,2 840,42 600,20 C400,2 190,38 0,16 Z" />
+      </svg>
 
-      <div className="relative z-10 flex flex-col items-center justify-center gap-5 px-8 py-15 text-center md:py-32">
+      <div className="relative z-10 flex flex-col items-center justify-center gap-5 px-8 py-8 text-center pb-25">
         <h1 className="text-3xl md:text-6xl font-now font-bold uppercase">
           Prepárate Pa&apos; Comerlos
         </h1>
@@ -15,31 +20,15 @@ export default function Conector() {
         </h2>
       </div>
 
-      {/* <CreamDrip className="bg-transparent bottom-0 h-12 rotate-180 md:h-20" /> */}
+      <svg
+        className="pointer-events-none absolute inset-x-0 w-full"
+        style={{ bottom: '-1px', height: '48px' }}
+        viewBox="0 0 1200 48"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path fill="var(--background)" d="M0,48 H1200 V26 C1000,2 820,42 600,20 C380,0 180,38 0,16 Z" />
+      </svg>
     </div>
   );
 }
-
-// function CreamDrip({ className = '' }: { className?: string }) {
-//   return (
-//     <svg
-//       viewBox="0 0 1440 80"
-//       preserveAspectRatio="none"
-//       aria-hidden="true"
-//       className={`pointer-events-none bg-transparent absolute inset-x-0 w-full ${className}`}
-//     >
-//       <path
-//         fill="currentColor"
-//         d="M0,0 H1440 V32
-//            C1380,60 1320,22 1260,52
-//            C1200,76 1140,28 1080,54
-//            C1020,72 960,34 900,56
-//            C840,76 780,28 720,52
-//            C660,72 600,30 540,54
-//            C480,76 420,30 360,56
-//            C300,72 240,26 180,50
-//            C120,70 60,28 0,46 Z"
-//       />
-//     </svg>
-//   );
-// }

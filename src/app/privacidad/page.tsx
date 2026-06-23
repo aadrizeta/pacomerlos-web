@@ -43,7 +43,7 @@ export default function Privacidad() {
           Política de privacidad
         </h1>
         <p className="mt-3 text-sm text-black/55">
-          Última actualización: <PH>FECHA</PH>
+          Última actualización: 23 de junio de 2026
         </p>
 
         <Section title="1. Responsable del tratamiento">
@@ -84,13 +84,8 @@ export default function Privacidad() {
 
         <Section title="2. Datos que tratamos y su origen">
           <p>
-            Este sitio web es de carácter informativo:{' '}
-            <strong>
-              no dispone de formularios, registro de usuarios, suscripción a
-              boletines ni venta en línea
-            </strong>
-            , por lo que no recopilamos datos personales identificativos de
-            forma activa durante la navegación. No obstante, podemos tratar:
+            Los datos personales que podemos tratar en este sitio web son los
+            siguientes:
           </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
@@ -98,6 +93,15 @@ export default function Privacidad() {
               de navegador y dispositivo, y registros de acceso generados
               automáticamente por el servidor y por el proveedor de seguridad
               (CDN) al servir las páginas e imágenes.
+            </li>
+            <li>
+              <strong>Dirección de correo electrónico (newsletter):</strong> si
+              te suscribes voluntariamente a nuestra lista de lanzamiento a
+              través del formulario habilitado a tal efecto, recopilamos
+              únicamente tu dirección de correo electrónico. Este dato se
+              utiliza <strong>exclusivamente con fines informativos</strong>{' '}
+              —comunicarte el lanzamiento del producto— y{' '}
+              <strong>no será cedido ni compartido con terceros</strong>.
             </li>
             <li>
               <strong>Datos de contacto:</strong> si decides escribirnos
@@ -119,6 +123,28 @@ export default function Privacidad() {
               (art. 6.1.f RGPD).
             </li>
             <li>
+              <strong>Envío de la comunicación de lanzamiento</strong> a
+              quienes se hayan suscrito a nuestra lista. El correo electrónico
+              se usa <strong>únicamente con fines informativos</strong>: avisar
+              del lanzamiento del producto Pacomerlos. No se realizarán envíos
+              comerciales no relacionados con dicha finalidad. Base jurídica:{' '}
+              <em>consentimiento explícito</em> del interesado (art. 6.1.a
+              RGPD), otorgado al marcar la casilla de aceptación en el
+              formulario.{' '}
+              <strong>
+                El usuario puede retirar su consentimiento en cualquier momento
+              </strong>{' '}
+              usando el enlace de baja incluido en cada correo o
+              escribiéndonos a{' '}
+              <Link
+                href="mailto:info@pacomerlos.com"
+                className="text-paco-purple-dark underline"
+              >
+                info@pacomerlos.com
+              </Link>
+              .
+            </li>
+            <li>
               <strong>Atender las consultas o comunicaciones</strong> que nos
               dirijas por correo electrónico. Base jurídica:{' '}
               <em>consentimiento</em> del interesado al contactar (art. 6.1.a
@@ -131,10 +157,17 @@ export default function Privacidad() {
           <p>
             Los datos técnicos de navegación se conservan durante el tiempo
             estrictamente necesario para las finalidades de seguridad indicadas
-            y según los plazos de los proveedores de alojamiento y CDN. Los datos
-            de contacto se conservarán durante el tiempo necesario para atender
-            tu solicitud y, posteriormente, durante los plazos legales que
-            resulten de aplicación.
+            y según los plazos de los proveedores de alojamiento y CDN. Los
+            datos de contacto se conservarán durante el tiempo necesario para
+            atender tu solicitud y, posteriormente, durante los plazos legales
+            que resulten de aplicación.
+          </p>
+          <p>
+            Los datos de suscripción al newsletter (dirección de correo
+            electrónico) se conservan mientras el usuario mantenga su
+            suscripción activa. Una vez que el usuario se dé de baja —ya sea
+            mediante el enlace incluido en los correos o por solicitud directa—
+            los datos serán eliminados de forma permanente.
           </p>
         </Section>
 
@@ -144,6 +177,14 @@ export default function Privacidad() {
             el servicio, nos apoyamos en proveedores que actúan como encargados
             del tratamiento:
           </p>
+          <p>
+            <strong>
+              Los datos personales no se ceden ni se comparten con terceros
+              con fines comerciales o publicitarios.
+            </strong>{' '}
+            Únicamente los ponemos a disposición de proveedores técnicos que
+            actúan como encargados del tratamiento bajo nuestras instrucciones:
+          </p>
           <ul className="list-disc space-y-1 pl-5">
             <li>
               <strong>Proveedor de alojamiento (hosting):</strong>{' '}
@@ -152,8 +193,14 @@ export default function Privacidad() {
             <li>
               <strong>Cloudflare, Inc.</strong> — red de distribución de
               contenidos y seguridad que protege el dominio{' '}
-              <span className="font-semibold">cms.pacomerlos.com</span> desde el
-              que se sirven las imágenes.
+              <span className="font-semibold">cms.pacomerlos.com</span> desde
+              el que se sirven las imágenes.
+            </li>
+            <li>
+              <strong>Listmonk</strong> — plataforma de envío de correo
+              electrónico alojada en nuestra propia infraestructura, utilizada
+              exclusivamente para gestionar las suscripciones al newsletter de
+              lanzamiento y enviar la comunicación correspondiente.
             </li>
           </ul>
           <p>

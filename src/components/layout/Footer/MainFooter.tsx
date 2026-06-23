@@ -25,7 +25,7 @@ export default function MainFooter() {
         </div>
 
         {/* Izquierda: enlaces (Navegar + Legal contiguos), centrado vertical */}
-        <div className="nav-row flex justify-between lg:col-start-1 lg:row-span-2 lg:justify-start lg:gap-24 lg:self-center">
+        <div className="nav-row flex justify-between lg:col-start-1 lg:row-span-2 lg:justify-start lg:gap-24 lg:self-center px-7 lg:px-0">
           <NavContainer name="Navegar" links={NAVEGAR_LINKS} />
           <NavContainer name="Legal" links={LEGAL_LINKS} />
         </div>

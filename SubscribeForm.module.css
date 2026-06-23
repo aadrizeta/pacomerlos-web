@@ -1,0 +1,163 @@
+/* ------------------------------------------------------------------ *
+ * SubscribeForm.module.css
+ * Todo es parametrizable vía variables CSS (--sf-*) que el componente
+ * inyecta por inline-style desde sus props. Aquí solo van los defaults.
+ * ------------------------------------------------------------------ */
+
+.bar {
+  /* --- tamaños --- */
+  --sf-width: 300px;
+  --sf-height: 50px;
+  --sf-radius: 10px;
+  --sf-button-width: 100px;
+  --sf-pad: 10px;
+
+  /* --- colores --- */
+  --sf-bg: #ffffff;
+  --sf-text: #171d23;
+  --sf-button-bg: #171d23;
+  --sf-button-hover: #222a33;
+  --sf-button-text: #ffffff;
+  --sf-curtain-bg: #cdd4dc;
+  --sf-success: #171d23;
+  --sf-error: #c0392b;
+
+  /* --- tiempos de animación --- */
+  --sf-curtain-speed: 1s;
+  --sf-button-speed: 0.5s;
+  --sf-input-speed: 0.2s;
+  --sf-result-speed: 0.5s;
+
+  position: relative;
+  width: var(--sf-width);
+  height: var(--sf-height);
+  background: var(--sf-bg);
+  border-radius: var(--sf-radius);
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* ---- input de email (ocupa el lugar del antiguo .login) ---- */
+.input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  height: 100%;
+  width: calc(var(--sf-width) - var(--sf-button-width) - var(--sf-pad));
+  padding: 0 0 0 var(--sf-pad);
+  margin: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--sf-text);
+  font: inherit;
+  line-height: var(--sf-height);
+  box-sizing: border-box;
+  transition: transform var(--sf-input-speed) ease-in-out 0s;
+}
+
+.input::placeholder {
+  color: var(--sf-text);
+  opacity: 0.55;
+}
+
+.input:focus-visible {
+  box-shadow: inset 0 -2px 0 0 var(--sf-button-bg);
+}
+
+.inputActive {
+  transform: translateX(var(--sf-width));
+}
+
+/* ---- botón de envío ---- */
+.button {
+  position: absolute;
+  top: calc(var(--sf-height) * -1);
+  left: calc(var(--sf-width) - var(--sf-button-width));
+  z-index: 2;
+  width: var(--sf-button-width);
+  height: calc(var(--sf-height) * 3);
+  border: 0;
+  border-top-right-radius: var(--sf-radius);
+  border-bottom-right-radius: var(--sf-radius);
+  background: var(--sf-button-bg);
+  color: var(--sf-button-text);
+  font: inherit;
+  text-align: center;
+  line-height: calc(var(--sf-height) * 3);
+  cursor: pointer;
+  transition: transform var(--sf-button-speed) ease 0s;
+}
+
+.button:hover {
+  background: var(--sf-button-hover);
+}
+
+.button:disabled {
+  cursor: default;
+}
+
+.buttonActive {
+  transform: translateY(var(--sf-height));
+}
+
+/* ---- cortina de carga (antiguo .subscribing) ---- */
+.curtain {
+  position: absolute;
+  top: 0;
+  left: calc(var(--sf-width) * -1);
+  z-index: 5;
+  width: var(--sf-width);
+  height: 100%;
+  background: var(--sf-curtain-bg);
+  transition: transform var(--sf-curtain-speed) ease 0s;
+}
+
+.curtainActive {
+  transform: translateX(var(--sf-width));
+}
+
+/* ---- mensaje de resultado (antiguo .thanks) ---- */
+.result {
+  position: absolute;
+  top: var(--sf-height);
+  left: 0;
+  z-index: 6;
+  width: var(--sf-width);
+  height: 100%;
+  padding-left: var(--sf-pad);
+  background: transparent;
+  color: var(--sf-success);
+  line-height: var(--sf-height);
+  box-sizing: border-box;
+  transition: transform var(--sf-result-speed) ease 0s;
+}
+
+.resultError {
+  color: var(--sf-error);
+}
+
+.resultActive {
+  transform: translateY(calc(var(--sf-height) * -1));
+}
+
+/* ---- honeypot anti-bots: fuera de pantalla, nunca visible ---- */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+/* ---- accesibilidad: respeta "reducir movimiento" ---- */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .button,
+  .curtain,
+  .result {
+    transition-duration: 0.01ms;
+  }
+}
