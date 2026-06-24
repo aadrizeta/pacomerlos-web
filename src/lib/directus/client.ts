@@ -18,7 +18,12 @@ export async function directusFetch<T>(
   const base = BASE.replace(/\/$/, '');
   const qs = params ? `?${new URLSearchParams(params).toString()}` : '';
   const url = `${base}${path}${qs}`;
-  const res = await fetch(url, { next: { revalidate } });
+  // Timeout para que un origen lento no bloquee el render del Server Component.
+  // Al saltar, el caller (getCarouselSlides/getPaquitos) degrada con su catch → [].
+  const res = await fetch(url, {
+    next: { revalidate },
+    signal: AbortSignal.timeout(8000),
+  });
   if (!res.ok) {
     throw new Error(`Directus ${path} → ${res.status} ${res.statusText}`);
   }

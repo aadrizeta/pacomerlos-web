@@ -43,6 +43,9 @@ export async function subscribeToLaunchList(email: string): Promise<SubscribeRes
       preconfirm_subscriptions: true,
     }),
     cache: 'no-store',
+    // Si Listmonk se cuelga, no dejamos la request del usuario colgada:
+    // el caller (route handler) lo traduce en un 502 controlado.
+    signal: AbortSignal.timeout(8000),
   });
 
   if (res.ok) return { ok: true, alreadySubscribed: false };

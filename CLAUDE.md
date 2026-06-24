@@ -159,6 +159,75 @@ todos los usuarios ven el mismo fondo durante la vida del proceso (aceptable;
 si en el futuro se quiere aleatoriedad por usuario habrá que usar un Client
 Component o una cookie con seed).
 
+## Animaciones de scroll (Scroll Reveal) — REUTILIZABLE
+
+Sistema reutilizable para animar la entrada de elementos al hacer scroll
+(fade in + translate), portado del proyecto HTML original. Pensado para
+aplicarse a cualquier componente nuevo sin recablear lógica.
+
+### Piezas
+
+- **`src/app/globals.css`** (sección `SCROLL REVEAL`, dentro de `@layer components`):
+  clases `.sr*` con el estado inicial oculto + `transition`, y `.revealed` que lo
+  resetea. El estado oculto está gateado por `.js-ready` → **sin JS el contenido se
+  ve siempre** (accesibilidad/SEO). Incluye `@media (prefers-reduced-motion: reduce)`.
+- **`src/app/layout.tsx`**: script inline en `<head>` que añade `js-ready` a
+  `<html>` **antes de pintar** → evita FOUC (parpadeo del estado oculto).
+- **`src/lib/scroll-reveal.ts`**: `observeReveal(el, repeat?)`. Mantiene **un solo
+  IntersectionObserver por modo** (one-shot / repeat) reutilizado por todos los
+  elementos (más eficiente que uno por elemento). Devuelve función de limpieza.
+  - one-shot (`threshold 0.08`): añade `.revealed` al entrar y deja de observar.
+  - repeat (`threshold 0.15`): re-anima cada pasada; al salir por abajo (`top > 0`)
+    quita `.revealed` para resetear.
+- **`src/components/ui/Reveal.tsx`**: componente cliente `<Reveal>`. Los `children`
+  se pasan como prop, por lo que **puede envolver Server Components** sin volverlos
+  cliente.
+
+### API de `<Reveal>`
+
+| Prop | Tipo | Default | Descripción |
+|------|------|---------|-------------|
+| `variant` | `up` \| `wipe` \| `tilt` \| `tilt-neg` \| `left` \| `right` | `up` | Tipo de efecto |
+| `delay` | `1` \| `2` \| `3` | — | Stagger: 0.1 / 0.2 / 0.35 s |
+| `repeat` | `boolean` | `false` | Re-anima cada vez que reentra en viewport |
+| `as` | `ElementType` | `div` | Etiqueta a renderizar (no romper layout) |
+| `className` | `string` | `''` | Clases de estilo, se combinan con la animación |
+
+### Variantes (clase CSS → efecto)
+
+| `variant` | Clase | Efecto | Transición |
+|-----------|-------|--------|------------|
+| `up` | `.sr` | fade + sube `1.75rem` | opacity/transform 0.7s |
+| `wipe` | `.sr-wipe` | fade + entra desde la izquierda `2rem` | opacity 0.6s / transform 0.9s |
+| `tilt` | `.sr-tilt` | fade + sube `1.75rem` + rota `+2.5°` | 0.7s |
+| `tilt-neg` | `.sr-tilt-neg` | fade + sube `1.75rem` + rota `-2.5°` | 0.7s |
+| `left` | `.sr-left` | fade + entra lateral desde la izquierda `2.5rem` | 0.8s |
+| `right` | `.sr-right` | fade + entra lateral desde la derecha `2.5rem` | 0.8s |
+
+Modificadores de retraso (independientes): `.sr-delay-1` (0.1s), `.sr-delay-2`
+(0.2s), `.sr-delay-3` (0.35s). Easing común: `cubic-bezier(.16,1,.3,1)`.
+
+### Uso
+
+```tsx
+import Reveal from '@/components/ui/Reveal';
+
+// Básico (fade + sube)
+<Reveal><h2>Título</h2></Reveal>
+
+// Variante + stagger conservando etiqueta semántica y clases de estilo
+<Reveal as="h2" variant="left" delay={1} className="font-chunko text-4xl">
+  Nuestros sabores
+</Reveal>
+
+// Re-anima en cada pasada de scroll
+<Reveal variant="wipe" repeat>…</Reveal>
+```
+
+Nota: para elementos que ya son Client Components y no quieren wrapper extra, se
+puede exponer un hook `useScrollReveal()` que devuelva un `ref` (no implementado
+aún; `observeReveal` ya está listo para ello).
+
 ## Despliegue
 
 ### Previsualización (Vercel)
@@ -232,6 +301,67 @@ Estado actual del singleton (verificado vía API):
 `LISTMONK_API_URL`, `LISTMONK_API_USER`, `LISTMONK_API_TOKEN`, `LISTMONK_LIST_ID`.
 En prod (VPS) `LISTMONK_API_URL` puede ser interno (`http://listmonk:9000`); en
 preview, la URL pública. (`LISTMONK_CAMPAIGN_ID` lo usa el Directus Flow, no el repo.)
+
+### Protección de `/api/notify` ante tráfico elevado (Cloudflare Rate Limiting)
+
+#### Problema que se pretende resolver
+
+A diferencia de los assets de Directus (que se resuelven **cacheando en el edge**),
+`/api/notify` es un **POST de escritura** (da de alta en Listmonk → escribe en
+Postgres). **No es cacheable**, así que Cloudflare no puede "absorberlo" sirviendo
+una copia. El lever aquí no es caché, sino **rate-limiting en el edge**.
+
+El riesgo no son 200 altas legítimas simultáneas (Node + Listmonk + Postgres las
+manejan sobradamente), sino un **flood de bots** martilleando el endpoint: cada hit
+dispara una escritura en BD (y potencialmente correo). Las defensas in-repo son
+solo segunda línea:
+
+- El honeypot (`website`) frena bots tontos, no a uno decidido.
+- El rate-limit en memoria de `route.ts` es **por-instancia y por-IP** (5/60s):
+  200 IPs distintas pasan todas; en serverless el `Map` es por instancia, así que
+  ni siquiera es consistente. Es best-effort, no una barrera real.
+
+La barrera real debe estar **antes del origen**, en Cloudflare — mismo principio
+que aplicamos con el proxy frente a `cms.pacomerlos.com`, pero con una **Rate
+Limiting Rule** en vez de una Cache Rule.
+
+#### Regla configurada
+
+> Zona: la del **frontend** (`pacomerlos.com`), NO la de `cms.` — el endpoint vive
+> en el servidor Next.js, no en Directus.
+
+- **Match**: `http.request.uri.path eq "/api/notify"` AND `http.request.method eq "POST"`
+- **Characteristics (contador por)**: IP de origen (`ip.src`).
+- **Rate**: 5 peticiones / 60 s (alineado con el limiter in-app, que queda de respaldo).
+- **Acción**: `Managed Challenge` (preferido sobre `Block`: deja pasar a humanos
+  reales que reintentan, corta automatización). Duración de mitigación: 60 s.
+- **Response**: 429 para los bloqueos directos.
+
+#### Aplicación (panel de Cloudflare)
+
+1. Zona `pacomerlos.com` → **Security → WAF → Rate limiting rules → Create rule**.
+2. Field `URI Path` equals `/api/notify`, y `Request Method` equals `POST`.
+3. **When rate exceeds**: 5 requests / 1 minute, contador *por IP*.
+4. **Then**: Managed Challenge (o Block con respuesta 429), mitigación 1 min.
+5. Deploy. La IP real la ve Cloudflare directamente (no depende de
+   `x-forwarded-for`, que sí usa el limiter de `route.ts`).
+
+#### Verificación rápida
+
+```bash
+# A la 6ª petición en <60s desde la misma IP debe responder 429 / challenge.
+for i in $(seq 1 7); do \
+  curl -s -o /dev/null -w "%{http_code}\n" \
+    -X POST https://pacomerlos.com/api/notify \
+    -H 'Content-Type: application/json' --data '{"email":"x@x.com"}'; \
+done
+```
+
+> Nota de capacidad: para picos de escritura aún mayores, la siguiente palanca
+> in-repo es un **semáforo de concurrencia** hacia Listmonk en
+> `src/lib/listmonk/client.ts` (limitar peticiones en vuelo), y para multi-instancia,
+> un store compartido (Redis/Upstash) para el rate-limit. Defensa anti-bots
+> definitiva: **Cloudflare Turnstile** en el form (pendiente de keys).
 
 ### Pendiente dentro de este flujo (ver ToDo)
 

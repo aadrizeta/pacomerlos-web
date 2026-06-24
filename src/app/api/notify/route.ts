@@ -10,10 +10,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // en producción serverless habría que usar un store compartido).
 const WINDOW_MS = 60_000;
 const MAX_HITS = 5;
+// Cota de seguridad para que el Map no crezca sin límite en un proceso de
+// larga vida (VPS): al superarla, purgamos las entradas ya caducadas.
+const MAX_ENTRIES = 10_000;
 const hits = new Map<string, { count: number; ts: number }>();
+
+/** Elimina entradas cuya ventana ya expiró (evita fuga de memoria). */
+function prune(now: number): void {
+  for (const [ip, entry] of hits) {
+    if (now - entry.ts > WINDOW_MS) hits.delete(ip);
+  }
+}
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+  if (hits.size > MAX_ENTRIES) prune(now);
   const entry = hits.get(ip);
   if (!entry || now - entry.ts > WINDOW_MS) {
     hits.set(ip, { count: 1, ts: now });

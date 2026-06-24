@@ -56,7 +56,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${now.variable} ${chunko.variable}`}>
+    <html
+      lang="es"
+      className={`${now.variable} ${chunko.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Marca que hay JS antes de pintar: habilita el estado inicial oculto
+            del scroll-reveal sin FOUC. Sin JS, el contenido se ve siempre. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js-ready')",
+          }}
+        />
+      </head>
       <body className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1">{children}</main>
