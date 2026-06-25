@@ -395,8 +395,10 @@ Admin → ② pone launch_status = "launched" en Directus (singleton site_settin
       → Listmonk envía la campaña a la lista
 ```
 
-Estado actual del singleton (verificado vía API):
-`site_settings` = `{ launch_status: "launched", campaign_sent: true }`.
+Estado actual del singleton (verificado vía API 2026-06-25):
+`site_settings` = `{ launch_status: "coming_soon", campaign_sent: true }`.
+⚠️ `campaign_sent` debe resetearse a `false` antes del lanzamiento real (el `true` es
+residuo del test) o el Flow no volverá a disparar.
 
 ### Funciones / archivos implementados (Next.js)
 
@@ -412,9 +414,12 @@ Estado actual del singleton (verificado vía API):
   silencioso sin dar pistas), validación de email (regex + máx 254 chars,
   normaliza a minúsculas), delega en `subscribeToLaunchList`. Devuelve
   `{ ok, alreadySubscribed }` o error con código adecuado.
-- `src/components/layout/Footer/NotifyForm.tsx` — client component con input
-  email + honeypot oculto + estados `idle|loading|success|error`. Mensajes
-  distintos para alta nueva vs. ya suscrito. Estilos `paco-purple`/`paco-cream`.
+- `src/components/layout/Footer/NewsLetterForm.tsx` — **Server Component** async: lee
+  `getLaunchSettings()` y renderiza el copy según `launch_status` (coming_soon ↔ launched);
+  pasa `launched` a `EmailInput`.
+- `src/components/ui/Footer/EmailInput.tsx` — client component con input email + honeypot
+  oculto + checkbox de consentimiento RGPD (enlace a `/privacidad`) + estados
+  `idle|loading|success|error`. Mensaje de éxito según `launched`.
 - `src/components/layout/Footer/Footer.tsx` — renderiza `<NotifyForm />`.
 
 ### Variables de entorno (server-only, sin `NEXT_PUBLIC_`)
@@ -484,16 +489,40 @@ done
 > un store compartido (Redis/Upstash) para el rate-limit. Defensa anti-bots
 > definitiva: **Cloudflare Turnstile** en el form (pendiente de keys).
 
-### Pendiente dentro de este flujo (ver ToDo)
+### Estado actual del flujo de lanzamiento (2026-06-25)
 
-- **RGPD**: el formulario aún **no** incluye el checkbox de consentimiento
-  obligatorio ni el enlace a `/privacidad`; falta también actualizar `/privacidad`
-  con el tratamiento de datos del newsletter.
-- **Render condicional por `launch_status`**: no existe `getLaunchSettings()` ni
-  `src/types/launch.ts`; el frontend todavía no muestra/oculta secciones según el
-  estado. El formulario se muestra siempre en el Footer.
-- **Plantillas de email de Listmonk**: falta diseñar el email de confirmación de
-  alta y el de notificación de lanzamiento.
+**Decisiones:**
+
+- **Una sola lista** en Listmonk: "Newsletter Paco Merlos" (id 3). El formulario da de
+  alta SIEMPRE en esta lista (pre y post lanzamiento). La campaña de Lanzamiento es su
+  primer envío; después, newsletters periódicas a la misma lista.
+- **Lanzamiento dirigido por `launch_status`** (única fuente de verdad): el flip
+  `coming_soon → launched` dispara el Flow (envía la campaña) **y** cambia el copy del
+  frontend (ISR). NO se usa la programación nativa de Listmonk (evita doble envío).
+
+**Hecho:**
+
+- **Listmonk**: lista 3 renombrada a "Newsletter Paco Merlos". Campaña REAL = **id 2**
+  ("Lanzamiento Paco Merlos", draft, → lista 3) con el diseño HTML implantado: asunto
+  "Ya es oficial: los paquitos ya están aquí 🎉", logo desde Directus
+  (`assets/f30168ce-75cd-4a8b-81f9-f74069284345`), plantilla **passthrough** (id 5) para
+  no anidar `<html>`. La plantilla del correo está versionada en `emails/lanzamiento.html`.
+  `app.root_url` corregido a `https://lists.pacomerlos.com` (antes `localhost:9000` →
+  enlaces de baja/tracking rotos).
+- **Frontend**: render condicional por `launch_status` implementado — `src/types/launch.ts`,
+  `getLaunchSettings()` (`queries.ts`, ISR 30s, fallback seguro a `coming_soon`),
+  `NewsLetterForm.tsx` (copy condicional coming_soon ↔ launched), `EmailInput.tsx`
+  (prop `launched` + checkbox de consentimiento RGPD + enlace a `/privacidad` ya presentes).
+
+**Pendiente para dejar el lanzamiento armado:**
+
+- **Directus Flow**: debe arrancar la **campaña 2** (⚠️ NO la 3, que era el TEST ya
+  finalizado). Condición `launch_status==launched AND campaign_sent==false` →
+  `PUT /api/campaigns/2/status {status:"running"}` → poner `campaign_sent=true`.
+- **`campaign_sent` → `false`** en `site_settings` (ahora `true`, residuo del test).
+- **Coolify (app prod)**: `LISTMONK_LIST_ID=3`; en dev puede quedar la 4 (lista de test).
+- **Día del lanzamiento (18-jul)**: poner `launch_status=launched` (manual o flow programado).
+- **Email de confirmación de alta**: aún sin diseñar (ver ToDo).
 
 ### Infra VPS (configurada aparte; no se aplica desde este repo)
 
@@ -501,8 +530,8 @@ done
   red interna de Directus. vhost Apache `lists.pacomerlos.com` (Certbot) → proxy a
   `listmonk:9000` (proteger `/admin`). Cloudflare: subdominio `lists` con bypass.
 - Remitente `From: Paco Merlos <newsletter@pacomerlos.com>`, `Reply-To: info@pacomerlos.com`.
-- Listmonk: lista "Lanzamiento Paco Merlos" (single opt-in), SMTP `newsletter@`,
-  campaña de lanzamiento. Entregabilidad: SPF, DKIM y DMARC para `pacomerlos.com`.
+- Listmonk: lista "Newsletter Paco Merlos" (id 3, single opt-in), SMTP `newsletter@`,
+  campaña de lanzamiento (id 2). Entregabilidad: SPF, DKIM y DMARC para `pacomerlos.com`.
 - Directus: singleton `site_settings` con `launch_status` (enum) + `campaign_sent`
   (bool). Lectura pública. Flow: trigger update + condición `launch_status==launched`
   → Request a Listmonk para arrancar la campaña.
@@ -514,20 +543,9 @@ done
   `/api/notify` → Listmonk Admin API → alta en lista. Comprobar también los casos
   edge: email ya suscrito (respuesta `alreadySubscribed`), rate-limit (429), honeypot
   y validación de email inválido.
-- [ ] **Componentes condicionados por `launch_status`**: construir componentes que se
-  muestren u oculten según el estado de la página (`coming_soon` | `launched`).
-  - `src/types/launch.ts` — `LaunchStatus`, `LaunchSettings`.
-  - `src/lib/directus/queries.ts` — `getLaunchSettings()` (lee el singleton
-    `site_settings`, mismo patrón que `getCarouselSlides`, ISR 30s).
-  - `src/app/page.tsx` (y donde aplique) — render condicional: en `coming_soon`
-    mostrar "Avísame"; en `launched` el contenido normal (decidir si además banner
-    "¡Ya disponible!").
 - [ ] **Email de confirmación de alta en la newsletter**: diseñar y crear la plantilla
   (Listmonk) que se envía al darse de alta, confirmando la suscripción. Remitente
   `newsletter@`, enlace de baja nativo de Listmonk.
-- [ ] **Email de notificación de lanzamiento**: diseñar y crear la plantilla/campaña
-  (Listmonk) que se envía a la lista cuando el producto pasa a `launched` ("¡Ya
-  disponible!"). Es la campaña que arranca el Directus Flow.
 - [ ] **Paquito destacado / edición limitada**: diferenciar visualmente un paquito nuevo o por tiempo limitado del resto del catálogo.
   - **Directus**: añadir campos a `paquitos_data`: `is_new` (bool) y/o `is_limited` (bool) + opcionalmente `badge_label` (string, ej. "Nuevo", "Edición limitada").
   - **Frontend**: variante visual en `PacoCard.tsx` (desktop) y `PacoCardMobileAlt.tsx` (mobile) — puede ser un badge/ribbon, borde especial, animación sutil, etc.
