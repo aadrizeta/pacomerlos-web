@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(open -a \"Brave Browser\" http://localhost:3002)",
+      "Bash(open -a \"Brave Browser\" \"http://localhost:3002\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(pkill -f \"pacomerlos-web.*next dev\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001)",
+      "Bash(osascript -e 'tell application \"Brave Browser\" *)",
+      "Bash(find /Users/onestar/Documents/PACOMERLOS-NEXT/src -type f | sort 2>/dev/null || ls /Users/onestar/Documents/PACOMERLOS-NEXT)",
+      "Read(//Users/onestar/Documents/PACOMERLOS-NEXT/src/**)",
+      "Read(//Users/onestar/Documents/PACOMERLOS-NEXT/**)",
+      "Read(//Users/onestar/Documents/PACOMERLOS-NEXT/src/components/layout/LandingPage/Anatomia/**)",
+      "Bash(grep -n \"pacomunity\\\\|pcom-\\\\|pcom_\\\\|#social\" /Users/onestar/Documents/PACOMERLOS-NEXT/src/app/globals.css | head -80)",
+      "Read(//Users/onestar/Documents/PACOMERLOS-NEXT/src/app/**)",
+      "Bash(ls /Users/onestar/Documents/PACOMERLOS-NEXT/public/img/ | sort)",
+      "Read(//Users/onestar/Documents/PACOMERLOS-NEXT/public/img/**)",
+      "Bash(cp \"/Users/onestar/Documents/PACOMERLOS-NEXT/public/img/rellenos unicos.png\" \"/Users/onestar/pacomerlos-web/public/img/\")",
+      "Bash(cp \"/Users/onestar/Documents/PACOMERLOS-NEXT/public/img/MASA NUBE.png\" \"/Users/onestar/pacomerlos-web/public/img/\")",
+      "Bash(cp \"/Users/onestar/Documents/PACOMERLOS-NEXT/public/img/cobertura_.png 2.png\" \"/Users/onestar/pacomerlos-web/public/img/\")",
+      "Bash(cp \"/Users/onestar/Documents/PACOMERLOS-NEXT/public/img/TICKET PACO TABLÓN.png\" \"/Users/onestar/pacomerlos-web/public/img/\")",
+      "Bash(cp \"/Users/onestar/Documents/PACOMERLOS-NEXT/public/img/PIN PACOMERLOS NARANJA.png\" \"/Users/onestar/pacomerlos-web/public/img/\")",
+      "Bash(mkdir -p /Users/onestar/pacomerlos-web/src/components/layout/LandingPage/Anatomia)",
+      "Bash(mkdir -p /Users/onestar/pacomerlos-web/src/components/layout/LandingPage/Pacommunity)",
+      "Bash(npx playwright *)"
+    ]
+  }
+}
