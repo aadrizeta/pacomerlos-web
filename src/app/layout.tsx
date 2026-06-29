@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Footer from "@/components/layout/Footer/Footer";
 import Header from "@/components/layout/Header/Header";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const now = localFont({
@@ -74,7 +73,6 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
-        <SpeedInsights />
       </body>
     </html>
   );
