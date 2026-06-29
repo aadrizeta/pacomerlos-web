@@ -5,6 +5,7 @@
   --foreground: #0F0F0F;
 
   --paco-orange: #fa572a;
+  --paco-orange-dark: #fa5020;
   --paco-purple: #8C52FF;
   --paco-purple-dark: #4c249c;
   --paco-cream:  #FFFFF5;
@@ -19,6 +20,7 @@
   --color-background:  var(--background);
   --color-foreground:  var(--foreground);
   --color-paco-orange: var(--paco-orange);
+  --color-paco-orange-dark: var(--paco-orange-dark);
   --color-paco-purple: var(--paco-purple);
   --color-paco-cream:  var(--paco-cream);
   --color-paco-dark:   var(--paco-dark);
@@ -448,13 +450,29 @@ body {
   /* ============================================= */
   /* ============== PANEL ACORDEÓN =============== */
   /* ============================================= */
-  /* Portado de paneles-acorderon-demo.html. Móvil/tablet: apilado en columna,
-     se expande con click (clase `.active`, la gestiona el componente cliente).
-     Escritorio (≥1024px): en fila, se expande con hover/focus (CSS puro). */
+  /* Estructura de estilos por estado. Hooks de marcado (Panel.tsx):
+       .acc-panel            → <article>  (+ .active = abierto en móvil/tablet)
+         .acc-panel__icon    → marca de agua (SVG decorativo)
+         .acc-panel__video   → vídeo de fondo (se muestra al abrir)
+         .acc-panel__content → capa de texto (z por encima de fondos)
+           .acc-panel__label → "01" · "02" · "03"
+           .acc-panel__title → título
+           .acc-panel__desc  → descripción (se revela al abrir)
+
+     Estados a diseñar (4): móvil/tablet <1024px {cerrado, abierto} ·
+     escritorio ≥1024px {cerrado, abierto}.  Abierto = .active (móvil) | :hover (desktop).
+     Lo de aquí son DEFAULTS funcionales mínimos; el diseño visual va en los TODO. */
+
+  /* ---------- Contenedor (stage) ---------- */
   .acc-stage {
     display: flex;
     flex-direction: column;
+    /* Marco exterior: un solo rectángulo de stroke alrededor de todos los paneles
+       (los divisores internos los pone cada panel, ver más abajo). */
+    border: 1px solid rgba(255, 255, 245, 0.15);
   }
+
+  /* ---------- Panel: base común a TODOS los estados ---------- */
   .acc-panel {
     position: relative;
     flex: 1 1 0;
@@ -465,23 +483,312 @@ body {
     outline: none;
     transition: flex-grow 0.8s cubic-bezier(0.16, 0.84, 0.3, 1);
   }
-
-  /* Móvil / tablet (<1024px): expansión por click */
-  @media (max-width: 1023px) {
-    .acc-stage:has(.acc-panel.active) .acc-panel { flex-grow: 0.7; }
-    .acc-stage:has(.acc-panel.active) .acc-panel.active { flex-grow: 3.6; }
+  /* Divisor entre paneles: una sola línea de 1px, sin doblarse. Base = stage en
+     columna (móvil) → divisor superior en todos menos el primero. En desktop
+     (fila) se cambia a borde izquierdo (ver media query). */
+  .acc-panel + .acc-panel {
+    border-top: 1px solid rgba(255, 255, 245, 0.15);
   }
 
-  /* Escritorio (≥1024px): expansión por hover/focus */
+  /* Capas de fondo (z-index 0, detrás del contenido) */
+  .acc-panel__icon {
+    position: absolute;
+    inset-inline-end: -2rem;
+    inset-block-end: -2rem;
+    z-index: 0;
+    width: 66%;
+    max-width: 20rem;
+    object-fit: contain;
+    opacity: 0.15;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.4s ease;   /* fade in/out al abrir/encoger panel */
+  }
+  .acc-panel__video {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;                 /* oculto por defecto; visible al abrir (ver estados) */
+    transition: opacity 0.5s ease;
+    pointer-events: none;
+  }
+
+  /* Contenido */
+  .acc-panel__content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    height: 100%;
+    padding: 1.5rem;
+    color: var(--paco-cream);
+    /* TODO: alineación/padding base del contenido */
+  }
+  .acc-panel__label {
+    font-family: var(--font-now);
+    font-size: 0.75rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    /* TODO: estilo de la etiqueta de orden */
+  }
+  .acc-panel__title {
+    font-family: var(--font-chunko);
+    font-size: 1.875rem;
+    line-height: 1;
+    /* TODO: estilo del título */
+  }
+  .acc-panel__desc {
+    max-width: 65ch;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    opacity: 0;                 /* oculta por defecto; se revela al abrir */
+    transform: translateY(0.5rem);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    /* TODO: estilo de la descripción */
+  }
+
+  /* ============================================================= */
+  /* ============ MÓVIL / TABLET (<1024px) ====================== */
+  /* ============================================================= */
+  @media (max-width: 1023px) {
+    /* ---------- CERRADO (estado por defecto) ---------- */
+    /* label = marca de agua: número grande en chunko, cream, esquina inf. dcha.,
+       detrás del título (z:0). title = encima (z:1), now bold uppercase, text-end,
+       en la misma banda vertical (abajo). */
+    .acc-panel__label {
+      position: absolute;
+      right: 1rem;
+      bottom: -0.25rem;
+      z-index: 0;
+      font-family: var(--font-chunko);
+      font-weight: 700;
+      font-size: clamp(5rem, 26vw, 10rem);
+      line-height: 0.8;
+      letter-spacing: 0;
+      text-transform: none;
+      /* marca de agua: paco-cream muy sutil, el contenido se lee por encima */
+      color: color-mix(in srgb, var(--paco-cream) 18%, transparent);
+    }
+    .acc-panel__title {
+      position: relative;
+      z-index: 1;
+      font-family: var(--font-now);
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: end;
+      font-size: clamp(1.25rem, 5vw, 2rem);
+    }
+    .acc-panel__desc-wrap{
+      @apply flex justify-end w-full;
+    }
+    .acc-panel__desc {
+      @apply text-lg leading-relaxed text-start;
+    }
+
+    /* backgroundIcon = marca de agua: ocupa la mitad izquierda del panel, anclado
+       al borde izquierdo, con un hueco superior para no tocar el borde de arriba.
+       Los SVG ahora son sólidos (#fffff5) y la opacidad watermark se controla aquí
+       (los tres iguales). El fade lo da la transición de la regla base. */
+      .acc-panel__icon {
+        @apply top-8 left-0 w-1/2 max-w-none h-auto object-top-left opacity-30;
+      }
+
+    /* Indicador de dropdown: chevron en la esquina inf. izq. Apunta hacia abajo
+       (cerrado) y gira 180° al abrir el panel. */
+    .acc-panel__indicator {
+      position: absolute;
+      left: 1rem;
+      bottom: 1rem;
+      z-index: 2;
+      width: 1.5rem;
+      height: 1.5rem;
+      color: var(--paco-cream);
+      transition: transform 0.4s cubic-bezier(0.16, 0.84, 0.3, 1);
+      pointer-events: none;
+    }
+
+    /* Capa de oscurecido: gradiente en el tercio inferior que mejora la lectura
+       del texto sobre el vídeo. Es una capa intermedia (::after) entre el vídeo
+       (z:0) y el contenido (z:10); NO modifica el vídeo. Solo visible al abrir. */
+    .acc-panel::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      height: 55%;
+      z-index: 1;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    /* ---------- ABIERTO (.active) ---------- */
+    .acc-stage:has(.acc-panel.active) .acc-panel { flex-grow: 0.7; }
+    .acc-stage:has(.acc-panel.active) .acc-panel.active { flex-grow: 3.6; }
+
+    .acc-panel.active::after { opacity: 1; }
+
+    /* Con un panel abierto, los iconos desaparecen (fade out): en los encogidos
+       descongestiona, y en el activo deja el vídeo limpio. Vuelven al cerrar
+       (transición en la regla base). */
+    .acc-stage:has(.acc-panel.active) .acc-panel__icon {
+      opacity: 0;
+    }
+
+    .acc-panel.active .acc-panel__indicator { transform: rotate(180deg); }
+    .acc-panel.active .acc-panel__video { opacity: 1; }
+    .acc-panel.active .acc-panel__desc {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* TODO: diseño del panel abierto en móvil/tablet */
+  }
+
+  /* ============================================================= */
+  /* ============ ESCRITORIO (≥1024px) ========================== */
+  /* ============================================================= */
   @media (min-width: 1024px) {
     .acc-stage { flex-direction: row; }
+    .acc-panel { cursor: default; }   /* solo hover, sin click/focus */
+
+    /* En fila el divisor es vertical: borde izquierdo en todos menos el primero. */
+    .acc-panel + .acc-panel {
+      border-top: none;
+      border-left: 1px solid rgba(255, 255, 245, 0.15);
+    }
+
+    /* ---------- CERRADO (estado por defecto) ---------- */
+    /* label = marca de agua en la esquina inf. dcha. (igual que móvil). */
+    .acc-panel__label {
+      position: absolute;
+      right: 1rem;
+      bottom: -0.25rem;
+      z-index: 0;
+      font-family: var(--font-chunko);
+      font-weight: 700;
+      font-size: clamp(4rem, 7vw, 8rem);
+      line-height: 0.8;
+      letter-spacing: 0;
+      text-transform: none;
+      color: color-mix(in srgb, var(--paco-cream) 18%, transparent);
+    }
+
+    /* Grupo icono + título: en flujo dentro del contenido, apilados (icono
+       arriba, título debajo) y centrados verticalmente como bloque. */
+    .acc-panel__content {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 1.25rem;
+    }
+    .acc-panel__icon {
+      position: static;
+      transform: none;
+      flex: none;                     /* no se encoge en el flex column */
+      width: clamp(9rem, 70%, 17rem); /* bastante más grande que en móvil */
+      max-width: none;
+      height: auto;
+      object-position: center;
+      opacity: 0.28;
+    }
+    .acc-panel__title {
+      z-index: 1;
+      font-family: var(--font-now);
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+      font-size: clamp(1.5rem, 2.2vw, 2.75rem);   /* mayor */
+      transition:
+        font-size 0.6s cubic-bezier(0.16, 0.84, 0.3, 1),
+        transform 0.6s cubic-bezier(0.16, 0.84, 0.3, 1);
+    }
+    /* El wrapper saca la descripción del flujo (absolute) y la sitúa en la mitad
+       derecha de la banda inferior, para no descentrar el grupo icono+título. */
+    .acc-panel__desc-wrap {
+      position: absolute;
+      right: 3rem;
+      bottom: 3rem;
+      width: min(65%, 36rem);
+      padding-bottom: 1.5rem;
+    }
+    /* El texto va alineado a la izquierda (text-start) dentro de ese bloque
+       derecho. La revelación (opacity/transform) la mantiene la regla base. */
+    .acc-panel__desc {
+      text-align: start;
+      font-size: clamp(1rem, 1.15vw, 1.375rem);   /* texto mayor */
+      line-height: 1.45;
+    }
+
+    /* Capa de oscurecido en la banda inferior (igual patrón que móvil): capa
+       intermedia ::after entre el vídeo (z:0) y el contenido (z:10). Solo en
+       hover. NO modifica el vídeo. */
+    .acc-panel::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      height: 55%;
+      z-index: 1;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    /* ---------- ABIERTO (:hover) ---------- */
     .acc-stage:hover .acc-panel { flex-grow: 0.55; }
-    .acc-stage .acc-panel:hover,
-    .acc-panel:focus-within { flex-grow: 4.2; }
+    .acc-stage .acc-panel:hover { flex-grow: 4.2; }
+
+    /* Al hacer hover en un panel, los demás se encogen y su icono desaparece
+       (fade out), igual que en móvil; vuelve al quitar el hover. */
+    .acc-stage:hover .acc-panel:not(:hover) .acc-panel__icon {
+      opacity: 0;
+    }
+    /* …y el título de los encogidos se reduce para caber en el ancho menor. */
+    .acc-stage:hover .acc-panel:not(:hover) .acc-panel__title {
+      font-size: clamp(1rem, 1.4vw, 1.5rem);
+    }
+
+    .acc-panel:hover::after { opacity: 1; }
+    .acc-panel:hover .acc-panel__video { opacity: 1; }
+
+    /* El icono de fondo desaparece al abrir. */
+    .acc-panel:hover .acc-panel__icon { opacity: 0; }
+
+    /* El título pasa a posición absoluta anclada al fondo (en rem → nunca se sale
+       del panel), justo encima de la descripción y alineado a su derecha
+       (inset-inline: 3rem como el wrapper + text-end). El `bottom` deja hueco para
+       la descripción; calibrar si el copy crece. */
+    .acc-panel:hover .acc-panel__title {
+      position: absolute;
+      left: 3rem;
+      right: 3rem;
+      bottom: 11rem;
+      text-align: end;
+    }
+
+    /* La descripción se revela en la banda inferior, bajo el título. */
+    .acc-panel:hover .acc-panel__desc {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .acc-panel { transition: none; }
+    .acc-panel,
+    .acc-panel__video,
+    .acc-panel__desc,
+    .acc-panel__indicator,
+    .acc-panel__icon,
+    .acc-panel__title { transition: none; }
+    .acc-panel::after { transition: none; }
   }
 }
 

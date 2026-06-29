@@ -253,6 +253,95 @@ todos los usuarios ven el mismo fondo durante la vida del proceso (aceptable;
 si en el futuro se quiere aleatoriedad por usuario habrá que usar un Client
 Component o una cookie con seed).
 
+### Vídeos de fondo del acordeón (`PanelAcordeon`) — servidos desde Directus
+
+Los vídeos de fondo de los paneles del acordeón (`Panel.tsx`, prop `bgVideo`) se
+suben a **Directus** y se referencian como `https://cms.pacomerlos.com/assets/<uuid>`,
+**no** se commitean a `public/`. Motivo: son binarios pesados; servirlos desde el
+edge de Cloudflare (no desde el servidor Next) evita saturar el ancho de banda del
+VPS y mantiene el repo ligero. Se tratan como asset de diseño aunque vivan en el CMS.
+
+#### Por qué no se saturó el origen (palancas, en orden de impacto)
+
+1. **Lazy load en el componente** (la mayor): `Panel.tsx` usa `preload="none"` y solo
+   reproduce al abrir (móvil) / hover (desktop). La mayoría de visitantes **nunca
+   descargan el vídeo**; solo se pinta el `poster` (.webp, sí transformado por Directus).
+2. **Cache Rule de `/assets/` ya los cubre**: la regla existente (Edge TTL 1 mes,
+   Browser TTL 1 día, UUID inmutable) matchea `URI Path starts_with /assets/`, así que
+   los vídeos heredan la caché de edge **sin regla nueva**.
+3. **Tiered Cache (Argo) activado** (Caching → Tiered Cache → ON): sin él, cada PoP de
+   Cloudflare hace su propio MISS contra el VPS con tráfico simultáneo global. Con
+   Tiered Cache los PoPs tiran de un PoP superior y **el origen sirve ~1 copia por
+   vídeo**, no N. Para vídeo es prácticamente obligatorio.
+4. **Range requests**: el `<video>` pide por rangos de bytes (`206 Partial Content`).
+   Directus/Apache deben devolver `Accept-Ranges: bytes` y `206`; Cloudflare cachea el
+   objeto y sirve los rangos desde el edge tras el primer MISS.
+
+#### Verificación
+
+```bash
+# Cacheable + acepta rangos
+curl -I https://cms.pacomerlos.com/assets/<UUID-video>
+#   → Accept-Ranges: bytes · Cache-Control: public, max-age=2592000, immutable
+
+# Petición por rango: 206, y en 2ª llamada cf-cache-status: HIT (no BYPASS/DYNAMIC)
+curl -s -D - -o /dev/null -r 0-1023 https://cms.pacomerlos.com/assets/<UUID-video>
+```
+
+> ⚠️ **ToS de Cloudflare**: servir *mucho* vídeo cacheado en planes self-serve
+> (Free/Pro/Business) puede chocar con la cláusula 2.8 (contenido no-HTML
+> desproporcionado); el camino sancionado a volumen es **Cloudflare Stream**. Para los
+> clips cortos y lazy-loaded del acordeón es despreciable, pero tenerlo en el radar.
+
+#### Compresión y aligerado de los `.mp4` (Directus NO transforma vídeo)
+
+Directus solo transforma imágenes (`?width=&format=webp`); el vídeo se sirve **tal
+cual se sube**, así que hay que optimizarlo **antes** de subirlo. Buenas prácticas:
+
+- **Sin pista de audio**: el vídeo es decorativo y va `muted`. Quitar el audio recorta
+  peso y evita problemas de autoplay. `ffmpeg -an`.
+- **Resolución ajustada al panel**, no a la fuente: un panel de acordeón rara vez
+  necesita >720p (incluso 480–540p basta en móvil). Escalar con `-vf scale=-2:720`
+  (alto 720, ancho automático par).
+- **Duración corta + loop**: 3–8 s en bucle. Recortar con `-t` / `-ss`.
+- **H.264 (`libx264`) con CRF**: `-crf 28..32` (más alto = más comprimido; 28 buen punto
+  para fondo). `-preset veryslow` comprime mejor a igualdad de calidad (solo afecta a la
+  codificación, no a la reproducción).
+- **`-pix_fmt yuv420p`**: compatibilidad universal de reproducción (Safari/iOS incluidos).
+- **`-movflags +faststart`**: mueve el `moov atom` al inicio → empieza a reproducir sin
+  descargar todo el archivo (clave con range requests).
+- **Framerate**: bajar a 24–30 fps si la fuente trae más; `-r 30`.
+- **Doble formato opcional**: añadir un `.webm` (VP9/AV1) suele pesar menos que H.264;
+  servir ambos y dejar que el navegador elija (requiere ampliar `Panel.tsx` a múltiples
+  `<source>`; hoy usa un único `src`).
+- **Objetivo de peso**: apuntar a **< 1–2 MB por clip**. Si no baja de ahí, recortar
+  duración/resolución antes que subir CRF hasta romper la calidad.
+
+Receta base (sin audio, 720p, H.264, faststart):
+
+```bash
+ffmpeg -i fuente.mov \
+  -an \
+  -vf "scale=-2:720,fps=30" \
+  -c:v libx264 -crf 30 -preset veryslow -pix_fmt yuv420p \
+  -movflags +faststart \
+  panel-fondo.mp4
+```
+
+Variante `.webm` (VP9) si se quiere doble formato:
+
+```bash
+ffmpeg -i fuente.mov -an -vf "scale=-2:720,fps=30" \
+  -c:v libvpx-vp9 -crf 34 -b:v 0 -row-mt 1 panel-fondo.webm
+```
+
+Y genera el **poster** (primer frame) en `.webp` para la prop `poster` de `Panel.tsx`
+(o súbelo a Directus y usa la transformación `?format=webp`):
+
+```bash
+ffmpeg -i panel-fondo.mp4 -frames:v 1 -q:v 80 panel-poster.webp
+```
+
 ## Animaciones de scroll (Scroll Reveal) — REUTILIZABLE
 
 Sistema reutilizable para animar la entrada de elementos al hacer scroll
