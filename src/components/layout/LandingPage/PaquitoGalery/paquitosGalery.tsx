@@ -9,7 +9,7 @@ interface PaquitosGaleryProps {
 
 export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
   return (
-    <section className="relative z-20 flex flex-col justify-center items-center pt-10 pb-20 bg-background">
+    <section className="relative z-20 flex flex-col justify-center items-center py-5 bg-background">
       <div className="w-full flex justify-center items-center gap-4 opacity-80 text-paco-orange">
         <div className="side-bars" />
         <p className="text-center text-xl uppercase tracking-widest font-now">Nuestros Sabores</p>

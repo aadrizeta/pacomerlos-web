@@ -28,6 +28,11 @@
 
   --font-now:    var(--font-now), system-ui, sans-serif;
   --font-chunko: var(--font-chunko), Impact, sans-serif;
+
+  /* Tamaños de fuente fluidos propios (más allá del 9xl de Tailwind). Al ir en
+     el namespace --text-*, generan una utilidad `text-<nombre>` que fija SOLO
+     font-size (sin line-height, salvo que se defina --text-*--line-height). */
+  --text-card-word: clamp(3.5rem, 10vw, 8.75rem);
 }
 
 body {
@@ -1232,90 +1237,18 @@ body {
 }
 
 /* ── Anatomía ── */
-#anatomia { background: var(--paco-cream); padding: 0; position: relative; z-index: 20; }
-
-.anat-band {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: clamp(280px, 33vw, 440px);
-    overflow: hidden;
+.anatomia-card{
+  @apply flex flex-col items-center justify-between overflow-hidden
 }
 
-.anat-band--orange { background: var(--paco-orange); color: #fff; }
-.anat-band--purple { background: var(--paco-purple); color: #fff; }
-.anat-band--cream  { background: var(--paco-cream);  color: var(--paco-orange); }
-
-.anat-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0;
-    min-height: 0;
-    padding: clamp(1.5rem, 3.5vw, 3.5rem) clamp(2rem, 4.5vw, 5rem);
+.card-word {
+  @apply font-chunko text-card-word uppercase leading-[0.8] md:mt-2 lg:mt-5;
 }
-
-.anat-kicker {
-    font-family: var(--font-now), sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.5rem, 2.8vw, 2.6rem);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 0.98;
-    margin: 0 0 0.9rem;
+.card-kicker{
+  @apply font-now text-[2.5rem] font-bold uppercase tracking-wide;
 }
-
-.anat-word {
-    font-family: var(--font-chunko), sans-serif;
-    font-size: clamp(4.5rem, 11.5vw, 11.5rem);
-    line-height: 0.8;
-    letter-spacing: 0.01em;
-    text-transform: uppercase;
-    margin: 0 0 -0.4rem;
-}
-
-.anat-desc {
-    font-family: var(--font-now), sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.25rem, 1.85vw, 1.75rem);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 0.98;
-    margin: 0;
-}
-
-.anat-photo {
-    overflow: hidden;
-    min-height: 0;
-}
-.anat-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.anat-band--orange .anat-photo img { object-position: left center; }
-
-.anat-band--purple .anat-photo img {
-    object-fit: cover;
-    object-position: center 0%;
-}
-
-.anat-band--cream .anat-photo { padding-top: 0; }
-.anat-band--cream .anat-photo img {
-    object-fit: contain;
-    object-position: center bottom;
-}
-
-@media (max-width: 767px) {
-    .anat-band {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto;
-    }
-    .anat-band--purple .anat-photo { order: 1; }
-    .anat-photo { height: 55vw; }
-    .anat-text { padding: 1.75rem 1.5rem; gap: 0.25rem; }
-    .anat-word { font-size: clamp(3rem, 16vw, 4.5rem); }
+.card-desc{
+  @apply font-now text-lg md:text-xl lg:text-3xl font-bold uppercase
 }
 
 /* ── Pacommunity / Tablón ── */

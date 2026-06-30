@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import CarouselSlide from '@/components/layout/LandingPage/Hero/CarouselSlide';
 import HeroCarousel from '@/components/layout/LandingPage/Hero/HeroCarousel';
+import HeroSticky from '@/components/layout/LandingPage/Hero/HeroSticky';
 import MainBanner from '@/components/layout/LandingPage/Hero/MainBanner';
 import { ConectorTop } from '@/components/ui/LangingPage/conector';
 import { getCarouselSlides, getLaunchSettings, getPaquitos } from '@/lib/directus/queries';
@@ -11,8 +12,8 @@ import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquit
 import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentralos';
 import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
 import { MOCK_STORES } from '@/lib/stores/mock';
-import Anatomia from '@/components/layout/LandingPage/Anatomia/Anatomia';
-import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
+import AnatomiaAlt from '@/components/layout/LandingPage/Anatomia/AnatomiaAlt';
+// import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
 
 export const metadata: Metadata = {
   title: "Paquitos Artesanales en Madrid",
@@ -33,17 +34,13 @@ export const revalidate = 30;
 export default async function Home() {
   const [slides, paquitos] = await Promise.all([getCarouselSlides(), getPaquitos()]);
   const { featured, normal } = buildCarouselOrder(slides);
-
-  // Localizador "Encuéntralos": en desarrollo siempre visible (para maquetar/probar);
-  // en producción solo cuando el sitio está "launched" (site_settings del CMS). El
-  // short-circuit evita pedir site_settings en dev.
   const showLocator =
     contentEnv() === 'development' ||
     (await getLaunchSettings()).launch_status === 'launched';
 
   return (
     <div className="relative">
-      <div className="sticky top-0 overflow-hidden">
+      <HeroSticky>
         <HeroCarousel>
           {featured.map((slide, i) => (
             <CarouselSlide key={slide.id} slide={slide} priority={i === 0} />
@@ -57,21 +54,13 @@ export default async function Home() {
             />
           ))}
         </HeroCarousel>
-      </div>
+      </HeroSticky>
       <ConectorTop />
       <PaquitosGalery paquitos={paquitos} />
-      {/* <ConectorMiddle
-        topText="Ni repostería fina, ni postureo"
-        bottomText="Nosotros nos manchamos las manos"
-        bgColor="var(--paco-orange)"
-      /> */}
+      <AnatomiaAlt />
       <PanelAcordeon />
-      {/* Datos provisionales (MOCK_STORES); sustituir por getPuntosVenta() cuando se
-          defina el origen en Directus — ver docs/encuentralos-store-locator.md.
-          Visibilidad: dev siempre; prod solo si site_settings = "launched". */}
-      <Anatomia />
       {showLocator && <Encuentralos stores={MOCK_STORES} />}
-      <Pacommunity />
+      {/* <Pacommunity /> */}
     </div>
   );
 }

@@ -5,12 +5,6 @@ import Reveal from '@/components/ui/Reveal';
 import Panel from './Panel';
 import { assetUrl } from '@/lib/directus/assets';
 
-/**
- * Contenido de cada panel. `bgVideo` se sirve desde Directus (edge-cached por
- * Cloudflare; lazy en `Panel.tsx` con preload="none"). `bgColor` es el fallback
- * que se ve mientras el vídeo no ha cargado. `poster` (primer frame webp) está
- * pendiente. `backgroundIcon` es el icono decorativo de fondo (marca de agua).
- */
 const PANELS = [
   {
     id: 'panel-1',
@@ -18,7 +12,7 @@ const PANELS = [
     title: 'la masa',
     description: 'Fermentación de 48 horas. Masa madre, harina, agua y tiempo. Sin aditivos, sin atajos. El reposo largo es lo que da a cada pieza su textura única.',
     bgVideo: assetUrl('ee88fb98-34b5-456d-b310-5f1a98fcc563'),
-    bgColor: 'var(--paco-purple)',
+    bgColor: 'var(--paco-orange)',
     backgroundIcon: '/icons/icono-masa.svg',
   },
   {
@@ -45,8 +39,6 @@ const MOBILE_MQ = '(max-width: 1023px)';
 
 export default function PanelAcordeon() {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  // Solo en móvil/tablet (<1024px) los paneles son interactivos (click/teclado).
-  // En escritorio la expansión es exclusivamente por hover (CSS puro).
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
