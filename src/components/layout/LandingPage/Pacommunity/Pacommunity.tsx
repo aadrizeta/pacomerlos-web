@@ -6,9 +6,10 @@ export default function Pacommunity() {
   const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const board = boardRef.current;
-    if (!board) return;
+    const node = boardRef.current;
+    if (!node) return;
     if (window.matchMedia('(max-width: 767px)').matches) return;
+    const board: HTMLDivElement = node;
 
     let dragging = false;
     let didDrag  = false;
