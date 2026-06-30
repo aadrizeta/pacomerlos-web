@@ -413,9 +413,9 @@ aún; `observeReveal` ya está listo para ello).
 
 ## Despliegue (Coolify en el VPS)
 
-El frontend Next.js se despliega con **Coolify** en el VPS (entorno tipo Vercel,
-self-hosted), junto a Directus, MariaDB y Listmonk. Coolify construye desde el
-repo de GitHub y publica cada entorno en su propia aplicación.
+El frontend Next.js se despliega con **Coolify** en el VPS (PaaS self-hosted),
+junto a Directus, MariaDB y Listmonk. Coolify construye desde el repo de GitHub y
+publica cada entorno en su propia aplicación.
 
 ### Estructura de ramas y entornos
 
@@ -460,9 +460,6 @@ Comunes a ambos entornos salvo `NEXT_PUBLIC_CONTENT_ENV`:
   de `/api/notify` documentada en la sección de Newsletter.
 - **Build**: Coolify usa Nixpacks/Docker; si se opta por imagen mínima, añadir
   `output: 'standalone'` en `next.config.ts`.
-- **Legacy Vercel**: el proyecto estuvo conectado a Vercel solo para preview. Con
-  Coolify, Vercel queda obsoleto; `vercel.json` puede eliminarse cuando se confirme
-  que no se usa.
 
 ## Newsletter de lanzamiento (Listmonk) — IMPLEMENTADO
 
