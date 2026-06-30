@@ -11,6 +11,8 @@ import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquit
 import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentralos';
 import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
 import { MOCK_STORES } from '@/lib/stores/mock';
+import Anatomia from '@/components/layout/LandingPage/Anatomia/Anatomia';
+import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
 
 export const metadata: Metadata = {
   title: "Paquitos Artesanales en Madrid",
@@ -67,7 +69,9 @@ export default async function Home() {
       {/* Datos provisionales (MOCK_STORES); sustituir por getPuntosVenta() cuando se
           defina el origen en Directus — ver docs/encuentralos-store-locator.md.
           Visibilidad: dev siempre; prod solo si site_settings = "launched". */}
+      <Anatomia />
       {showLocator && <Encuentralos stores={MOCK_STORES} />}
+      <Pacommunity />
     </div>
   );
 }
