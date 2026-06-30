@@ -858,7 +858,7 @@ body {
     font-size: clamp(1rem, 1.5vw, 1.15rem);
     line-height: 1.75;
     color: rgba(15,15,15,0.65);
-    max-width: 46ch;
+    max-width: 62ch;
     margin-bottom: 2.5rem;
 }
 .abt-intro-cta {
@@ -1083,7 +1083,7 @@ body {
     background: var(--paco-orange) !important;
 }
 .abt-respaldo--orange h2 { color: var(--paco-cream); }
-.abt-respaldo--orange h2 span { color: var(--paco-purple); }
+.abt-respaldo--orange h2 span { color: var(--paco-cream); }
 .abt-respaldo--orange .abt-respaldo-text p { color: rgba(255,255,245,0.82); }
 .abt-respaldo-inner {
     display: grid;

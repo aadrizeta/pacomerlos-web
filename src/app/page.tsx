@@ -11,6 +11,8 @@ import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquit
 import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentralos';
 import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
 import { MOCK_STORES } from '@/lib/stores/mock';
+import Anatomia from '@/components/layout/LandingPage/Anatomia/Anatomia';
+import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
 
 export const metadata: Metadata = {
   title: "Paquitos Artesanales en Madrid",

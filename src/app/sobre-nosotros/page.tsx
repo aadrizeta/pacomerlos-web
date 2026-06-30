@@ -29,8 +29,8 @@ export default function AboutUsPage() {
         <div className="abt-origen-inner">
           <h2 className="abt-origen-title">NUESTRO<br />ORIGEN</h2>
           <div className="abt-origen-cols">
-            <p>Paco Merlos nació de una pregunta sencilla: ¿por qué la producción en masa ocupa tanto espacio si se puede hacer algo infinitamente mejor de forma artesanal? Empezamos en Madrid, con un obrador, una receta de masa madre y la convicción de que el producto hecho a mano siempre gana.</p>
-            <p>No buscábamos competir con nadie. Buscábamos crear algo que no existía. El resultado fueron los Paquitos — piezas con nombre propio, personalidad propia y una combinación de sabores que no encontrarás en ningún otro sitio.</p>
+            <p>Paco Merlos nació de una pregunta sencilla: ¿Quién decidió que un bollo tiene que ser siempre igual de aburrido? Empezamos en Madrid, con un obrador, una receta simple de masa madre y la convicción de que nuestro producto lograría ser algo único.</p>
+            <p>No buscábamos competir con nadie; buscábamos crear algo que no existía. El resultado fueron los Paquitos — piezas con nombre propio, personalidad única y una combinación de sabores que no encontrarás en ningún otro sitio.</p>
           </div>
         </div>
       </section>
