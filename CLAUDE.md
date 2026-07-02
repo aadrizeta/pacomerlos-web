@@ -370,41 +370,50 @@ aplicarse a cualquier componente nuevo sin recablear lógica.
 
 | Prop | Tipo | Default | Descripción |
 |------|------|---------|-------------|
-| `variant` | `up` \| `wipe` \| `tilt` \| `tilt-neg` \| `left` \| `right` | `up` | Tipo de efecto |
+| `direction` | `up` \| `down` \| `left` \| `right` | `up` | Sentido del desplazamiento al revelarse (convención tipo AOS) |
+| `distance` | `number` \| `string` | `'1.75rem'` | Distancia recorrida. Número → px; string → valor CSS tal cual |
+| `duration` | `number` \| `string` | `'0.7s'` | Duración del reveal. Número → segundos; string → valor CSS |
 | `delay` | `1` \| `2` \| `3` | — | Stagger: 0.1 / 0.2 / 0.35 s |
 | `repeat` | `boolean` | `false` | Re-anima cada vez que reentra en viewport |
 | `as` | `ElementType` | `div` | Etiqueta a renderizar (no romper layout) |
 | `className` | `string` | `''` | Clases de estilo, se combinan con la animación |
 
-### Variantes (clase CSS → efecto)
+### Dirección (`direction` → desplazamiento inicial)
 
-| `variant` | Clase | Efecto | Transición |
-|-----------|-------|--------|------------|
-| `up` | `.sr` | fade + sube `1.75rem` | opacity/transform 0.7s |
-| `wipe` | `.sr-wipe` | fade + entra desde la izquierda `2rem` | opacity 0.6s / transform 0.9s |
-| `tilt` | `.sr-tilt` | fade + sube `1.75rem` + rota `+2.5°` | 0.7s |
-| `tilt-neg` | `.sr-tilt-neg` | fade + sube `1.75rem` + rota `-2.5°` | 0.7s |
-| `left` | `.sr-left` | fade + entra lateral desde la izquierda `2.5rem` | 0.8s |
-| `right` | `.sr-right` | fade + entra lateral desde la derecha `2.5rem` | 0.8s |
+El efecto es siempre **translate + fade-in**: el elemento parte desplazado
+`distance` desde el lado opuesto y viaja hacia `direction` mientras aparece.
+
+| `direction` | Parte desde | Viaja hacia |
+|-------------|-------------|-------------|
+| `up`    | abajo    | arriba     |
+| `down`  | arriba   | abajo      |
+| `left`  | derecha  | izquierda  |
+| `right` | izquierda| derecha    |
+
+Implementación: `<Reveal>` traduce `direction`/`distance`/`duration` a CSS custom
+properties inline (`--sr-tx`, `--sr-ty`, `--sr-duration`); la clase `.sr` de
+`globals.css` las lee con fallback al comportamiento clásico (sube `1.75rem` en
+`0.7s`). El reveal (`.revealed`) lleva el `transform` a `none`. Easing común:
+`cubic-bezier(.16,1,.3,1)`.
 
 Modificadores de retraso (independientes): `.sr-delay-1` (0.1s), `.sr-delay-2`
-(0.2s), `.sr-delay-3` (0.35s). Easing común: `cubic-bezier(.16,1,.3,1)`.
+(0.2s), `.sr-delay-3` (0.35s).
 
 ### Uso
 
 ```tsx
 import Reveal from '@/components/ui/Reveal';
 
-// Básico (fade + sube)
+// Básico (fade + sube 1.75rem en 0.7s)
 <Reveal><h2>Título</h2></Reveal>
 
-// Variante + stagger conservando etiqueta semántica y clases de estilo
-<Reveal as="h2" variant="left" delay={1} className="font-chunko text-4xl">
+// Dirección + distancia + duración + stagger, conservando etiqueta y clases
+<Reveal as="h2" direction="left" distance={40} duration={0.9} delay={1} className="font-chunko text-4xl">
   Nuestros sabores
 </Reveal>
 
 // Re-anima en cada pasada de scroll
-<Reveal variant="wipe" repeat>…</Reveal>
+<Reveal direction="right" repeat>…</Reveal>
 ```
 
 Nota: para elementos que ya son Client Components y no quieren wrapper extra, se

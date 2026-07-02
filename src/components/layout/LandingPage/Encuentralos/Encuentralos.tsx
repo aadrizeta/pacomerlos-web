@@ -32,7 +32,7 @@ export default function Encuentralos({ stores }: EncuentralosProps) {
         <Reveal
           as="h2"
           delay={1}
-          className="text-center font-chunko text-5xl uppercase leading-[0.9] text-paco-orange md:text-7xl lg:text-8xl"
+          className="text-center font-chunko text-4xl uppercase leading-[0.9] text-paco-orange md:text-7xl lg:text-8xl"
         >
           Dónde
           <br />

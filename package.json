@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "embla-carousel-react": "^8.6.0",
     "leaflet": "1.9.4",
     "leaflet-gesture-handling": "^1.2.2",
     "next": "16.2.7",

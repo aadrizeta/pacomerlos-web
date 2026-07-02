@@ -14,6 +14,13 @@
 let oneShot: IntersectionObserver | null = null;
 let repeat: IntersectionObserver | null = null;
 
+/**
+ * Margen inferior negativo: encoge el viewport efectivo por abajo, de modo que el
+ * reveal salta cuando el elemento ya ha subido ~18% dentro de la pantalla (no justo
+ * al asomar por el borde inferior). Sube el % para dispararlo aún más arriba.
+ */
+const ROOT_MARGIN = '0px 0px -18% 0px';
+
 function getOneShot(): IntersectionObserver {
   if (oneShot) return oneShot;
   oneShot = new IntersectionObserver(
@@ -25,7 +32,7 @@ function getOneShot(): IntersectionObserver {
         }
       }
     },
-    { threshold: 0.08 },
+    { threshold: 0.08, rootMargin: ROOT_MARGIN },
   );
   return oneShot;
 }
@@ -43,7 +50,7 @@ function getRepeat(): IntersectionObserver {
         }
       }
     },
-    { threshold: 0.15 },
+    { threshold: 0.15, rootMargin: ROOT_MARGIN },
   );
   return repeat;
 }

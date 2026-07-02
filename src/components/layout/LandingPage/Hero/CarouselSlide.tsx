@@ -26,7 +26,7 @@ export default function CarouselSlide({ slide, priority = false }: CarouselSlide
           className="absolute inset-0 h-full w-full object-cover select-none"
         />
       </picture>
-      <div className="absolute inset-0 z-10 flex flex-col items-start justify-end padding-responsive pb-16 md:items-center md:justify-center md:pb-0 md:text-center">
+      <div className="absolute inset-0 z-10 flex flex-col items-start justify-end padding-responsive pb-20 md:items-center md:justify-center md:pb-0 md:text-center">
         <h2
           className="bp-text-color font-chunko text-4xl uppercase leading-tight md:text-5xl lg:text-8xl md:max-w-2xl lg:max-w-4xl"
           style={
