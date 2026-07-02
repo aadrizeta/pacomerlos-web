@@ -103,10 +103,7 @@ body {
   /* =================== HERO ==================== */
   /* ============================================= */
   .hero-dot {
-    @apply h-2.5 w-2.5 cursor-pointer rounded-full bg-paco-dark/60 shadow-[0_1px_3px_rgba(0,0,0,0.45)] transition-all duration-300 hover:bg-paco-dark;
-  }
-  .hero-dot-active {
-    @apply w-6 bg-paco-dark;
+    @apply h-2.5 w-2.5 cursor-pointer rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.45)] transition-all duration-300;
   }
   /* Color de texto distinto por breakpoint. El elemento aporta los valores vía
      CSS vars inline (--bp-color-mobile / --bp-color-desktop). Corte en lg (1024px),
@@ -126,81 +123,85 @@ body {
     @apply h-px w-10 bg-paco-orange
   }
 
+  /* Carrusel de paquitos (Embla). El efecto coverflow —escala, blur, opacidad y
+     desplazamiento hacia el centro— lo aplica el tween de Embla por frame como
+     estilos inline sobre `.paquito-slide__inner`; aquí solo va el layout. */
+  .paquito-carousel {
+    @apply relative w-full;
+  }
   .paquito-stage {
-    position: relative;
+    overflow: hidden;
     width: 100%;
     height: clamp(180px, 28vw, 400px);
-    overflow: hidden;
-    margin-top: 3rem;
     touch-action: pan-y;
     user-select: none;
   }
+  .paquito-track {
+    display: flex;
+    height: 100%;
+    align-items: center;
+  }
   .paquito-slide {
+    flex: 0 0 clamp(300px, 62vw, 920px);
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .paquito-slide__inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center;
+    will-change: transform, filter, opacity;
+    /* Sin transición: el tween lo actualiza cada frame para seguir al dedo. */
+  }
+
+  /* Flechas prev/next: ocultas por defecto, semitransparentes al hacer hover
+     sobre el carrusel; visibles también al enfocar con teclado (focus-within). */
+  .paquito-arrow {
     position: absolute;
-    left: 50%;
     top: 50%;
-    width: clamp(300px, 62vw, 920px);
-    transform: translate(-50%, -50%) scale(0.85);
-    transition:
-      transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      filter    0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      opacity   0.5s ease;
-    z-index: 1;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-color: color-mix(in srgb, var(--paco-purple) 55%, transparent);
+    color: var(--paco-cream);
+    cursor: pointer;
     opacity: 0;
     pointer-events: none;
-    filter: blur(8px);
-    will-change: transform, filter, opacity;
+    transform: translateY(-50%);
+    transition: opacity 0.3s ease, background-color 0.2s ease;
   }
-  .paquito-slide[data-state="active"] {
-    transform: translate(-50%, -50%) scale(1);
-    filter: none;
-    z-index: 3;
-    opacity: 1;
+  .paquito-arrow--prev { left: 0.75rem; }
+  .paquito-arrow--next { right: 0.75rem; }
+  .paquito-arrow svg { width: 1.25rem; height: 1.25rem; }
+  .paquito-carousel:hover .paquito-arrow,
+  .paquito-carousel:focus-within .paquito-arrow {
+    opacity: 0.6;
     pointer-events: auto;
   }
-  .paquito-slide[data-state="prev"] {
-    transform: translate(calc(-50% - 44vw), -50%) scale(0.73);
-    filter: blur(6px);
-    z-index: 2;
-    opacity: 0.85;
+  .paquito-arrow:hover {
+    opacity: 1;
+    background-color: var(--paco-purple);
   }
-  .paquito-slide[data-state="next"] {
-    transform: translate(calc(-50% + 44vw), -50%) scale(0.73);
-    filter: blur(6px);
-    z-index: 2;
-    opacity: 0.85;
+  .paquito-arrow:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--paco-purple);
+    outline-offset: 2px;
   }
-  .paquito-slide[data-state="far-next"] {
-    transform: translate(calc(-50% + 72vw), -50%) scale(0.45);
-    filter: blur(14px);
-    opacity: 0;
-    z-index: 1;
-  }
-  .paquito-slide[data-state="far-prev"] {
-    transform: translate(calc(-50% - 72vw), -50%) scale(0.45);
-    filter: blur(14px);
-    opacity: 0;
-    z-index: 1;
-  }
-  .paquito-slide[data-state="hidden"] {
-    opacity: 0;
-    z-index: 0;
+  @media (prefers-reduced-motion: reduce) {
+    .paquito-arrow { transition: none; }
   }
   @media (max-width: 767px) {
     .paquito-stage { height: clamp(140px, 50vw, 280px); }
-    .paquito-slide { width: 78vw; }
-    .paquito-slide[data-state="prev"] {
-      transform: translate(calc(-50% - 56vw), -50%) scale(0.62);
-    }
-    .paquito-slide[data-state="next"] {
-      transform: translate(calc(-50% + 56vw), -50%) scale(0.62);
-    }
-    .paquito-slide[data-state="far-next"] {
-      transform: translate(calc(-50% + 88vw), -50%) scale(0.4);
-    }
-    .paquito-slide[data-state="far-prev"] {
-      transform: translate(calc(-50% - 88vw), -50%) scale(0.4);
-    }
+    .paquito-slide { flex-basis: 78vw; }
   }
   /* ============================================= */
   /* =================== FOOTER ================== */

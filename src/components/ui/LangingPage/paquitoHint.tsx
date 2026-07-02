@@ -4,15 +4,20 @@ import { assetUrl } from '@/lib/directus/assets';
 
 interface PaquitoHintProps {
   paquito: Paquito;
+  /** Solo la slide activa es navegable: las demás salen del tab order, se
+   *  ocultan a lectores de pantalla y dejan pasar el arrastre (pointer-events). */
+  active?: boolean;
 }
 
-export default function PaquitoHint({ paquito }: PaquitoHintProps) {
+export default function PaquitoHint({ paquito, active = true }: PaquitoHintProps) {
   return (
     <Link
       href={`/sabores#${paquito.slug}`}
       aria-label={`Ver ${paquito.name} en la página de sabores`}
+      aria-hidden={active ? undefined : true}
+      tabIndex={active ? undefined : -1}
       draggable={false}
-      className="flex w-full items-center justify-center"
+      className={`flex w-full items-center justify-center${active ? '' : ' pointer-events-none'}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- assets servidos directos por Cloudflare/Directus, sin pasar por /_next/image (ver CLAUDE.md) */}
       <img

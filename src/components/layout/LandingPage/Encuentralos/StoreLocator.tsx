@@ -236,7 +236,7 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
           {GEO_SVG}
           {busy === 'geo' ? 'Buscando…' : 'Usar mi ubicación'}
         </button>
-        <span className="text-center text-xs font-semibold uppercase tracking-[0.1em] text-paco-dark/40">o</span>
+        <span className="text-center text-xs font-semibold uppercase tracking-widest text-paco-dark/40">o</span>
         <div className="flex min-w-0 flex-1">
           <input
             type="text"
@@ -245,13 +245,13 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Escribe tu dirección o ciudad…"
             autoComplete="off"
-            className="min-w-0 flex-1 rounded-l-lg border border-r-0 border-paco-dark/20 bg-paco-dark/[0.03] px-4 py-2.5 text-paco-dark outline-none transition placeholder:text-paco-dark/40 focus:border-paco-orange focus:bg-paco-dark/[0.05]"
+            className="min-w-0 flex-1 rounded-l-lg border border-r-0 border-paco-dark/20 bg-paco-dark/3 px-4 py-2.5 text-paco-dark outline-none transition placeholder:text-paco-dark/40 focus:border-paco-orange focus:bg-paco-dark/5"
           />
           <button
             type="button"
             onClick={handleSearch}
             disabled={busy === 'search'}
-            className="rounded-r-lg border border-paco-dark/20 bg-paco-dark/[0.06] px-4 py-2.5 text-sm font-bold text-paco-dark transition hover:bg-paco-dark/10 disabled:opacity-60"
+            className="rounded-r-lg border border-paco-dark/20 bg-paco-dark/6 px-4 py-2.5 text-sm font-bold text-paco-dark transition hover:bg-paco-dark/10 disabled:opacity-60"
           >
             {busy === 'search' ? '…' : 'Buscar'}
           </button>
@@ -259,10 +259,10 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
       </div>
 
       {/* Cuerpo: lista + mapa */}
-      <div className="grid h-auto gap-6 md:h-[500px] md:grid-cols-[340px_1fr]">
+      <div className="grid h-auto gap-6 md:h-125 md:grid-cols-[340px_1fr]">
         <div
           ref={listRef}
-          className="order-2 h-[280px] overflow-y-auto rounded-xl border border-paco-dark/10 bg-paco-dark/[0.02] p-2 md:order-1 md:h-full"
+          className="order-2 h-70 overflow-y-auto rounded-xl border border-paco-dark/10 bg-paco-dark/2 p-2 md:order-1 md:h-full"
         >
           {message && <p className="px-4 py-6 text-center text-sm leading-relaxed text-paco-dark/55">{message}</p>}
           {!message && visibleStores.length === 0 && (
@@ -278,9 +278,8 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
                 key={s.id}
                 data-id={s.id}
                 onClick={() => setActiveId(String(s.id))}
-                className={`flex cursor-pointer items-start gap-3.5 rounded-lg border-b border-paco-dark/[0.06] p-3 transition last:border-b-0 ${
-                  isActive ? 'bg-paco-orange/12' : 'hover:bg-paco-dark/[0.04]'
-                }`}
+                className={`flex cursor-pointer items-start gap-3.5 rounded-lg border-b border-paco-dark/6 p-3 transition last:border-b-0 ${isActive ? 'bg-paco-orange/12' : 'hover:bg-paco-dark/4'
+                  }`}
               >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paco-orange text-xs font-extrabold text-paco-cream">
                   {String(i + 1).padStart(2, '0')}
@@ -288,7 +287,7 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate text-sm font-bold text-paco-dark">{s.name}</span>
-                    <span className="shrink-0 rounded-full bg-paco-dark/[0.06] px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-paco-dark/55">
+                    <span className="shrink-0 rounded-full bg-paco-dark/6 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide text-paco-dark/55">
                       {CHAINS[s.chain].label}
                     </span>
                   </div>
@@ -319,7 +318,7 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
 
         <div
           ref={mapRef}
-          className="order-1 z-0 block h-[300px] w-full rounded-xl border border-paco-dark/10 md:order-2 md:h-full"
+          className="order-1 z-0 block h-75 w-full rounded-xl border border-paco-dark/10 md:order-2 md:h-full"
         />
       </div>
     </div>
@@ -331,11 +330,10 @@ function ChainChip({ label, active, onClick }: { label: string; active: boolean;
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3.5 py-1.5 text-sm font-bold transition ${
-        active
-          ? 'border-paco-orange bg-paco-orange text-paco-cream'
-          : 'border-paco-dark/15 bg-transparent text-paco-dark/70 hover:border-paco-orange/50 hover:text-paco-orange'
-      }`}
+      className={`rounded-full border px-3.5 py-1.5 text-sm font-bold transition ${active
+        ? 'border-paco-orange bg-paco-orange text-paco-cream'
+        : 'border-paco-dark/15 bg-transparent text-paco-dark/70 hover:border-paco-orange/50 hover:text-paco-orange'
+        }`}
     >
       {label}
     </button>

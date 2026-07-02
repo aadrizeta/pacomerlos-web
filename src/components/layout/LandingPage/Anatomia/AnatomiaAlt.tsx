@@ -37,7 +37,7 @@ const BANDS = [
 ];
 export default function AnatomiaAlt() {
   return (
-    <section className="w-full flex flex-col mt-20 border-t border-paco-dark/10">
+    <section className="w-full flex flex-col mt-10 lg:mt-20 border-t border-paco-dark/10">
       {BANDS.map((band, i) => (
         <AnatomiaCard
           key={band.word}

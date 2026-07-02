@@ -10,7 +10,7 @@ import { buildCarouselOrder } from '@/utils/carousel-order';
 import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquitosGalery';
 // import ConectorMiddle from '@/components/ui/LangingPage/ConectorMiddle';
 import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentralos';
-import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
+// import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
 import { MOCK_STORES } from '@/lib/stores/mock';
 import AnatomiaAlt from '@/components/layout/LandingPage/Anatomia/AnatomiaAlt';
 import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
