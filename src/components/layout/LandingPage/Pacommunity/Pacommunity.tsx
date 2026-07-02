@@ -6,7 +6,7 @@ export default function Pacommunity() {
   const boardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const board = boardRef.current;
+    const board = boardRef.current!;
     if (!board) return;
     if (window.matchMedia('(max-width: 767px)').matches) return;
 
