@@ -2,6 +2,7 @@ import Image from 'next/image';
 import type { Paquito } from '@/types/paquitos';
 import { assetUrl } from '@/lib/directus/assets';
 import { normalizeAllergens } from '@/lib/allergens';
+import Tooltip from '@/components/ui/Tooltip';
 
 const IMG_MOBILE = 500;
 const IMG_DESKTOP = 800;
@@ -114,21 +115,16 @@ function AllergenRow({
       <p className="text-sm uppercase tracking-widest text-black/55">{title}</p>
       <ul className="mt-2 flex flex-wrap gap-4">
         {items.map(({ slug, label, icon }) => (
-          <li key={slug} className="group relative flex items-center">
-            <Image
-              src={icon}
-              alt={label}
-              title={label}
-              width={40}
-              height={40}
-              className="h-10 w-10"
-            />
-            <span
-              role="tooltip"
-              className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-paco-dark px-2 py-1 text-base text-paco-cream opacity-0 transition-opacity duration-150 group-hover:opacity-100"
-            >
-              {label}
-            </span>
+          <li key={slug} className="flex items-center">
+            <Tooltip label={label} className="inline-flex items-center">
+              <Image
+                src={icon}
+                alt={label}
+                width={40}
+                height={40}
+                className="h-10 w-10"
+              />
+            </Tooltip>
           </li>
         ))}
       </ul>
