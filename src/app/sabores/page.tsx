@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import BackButton from "@/components/ui/SaboresPage/backButton"
 import DeepLinkScroller from "@/components/ui/SaboresPage/deepLinkScroller"
 import PacoCard from "@/components/ui/SaboresPage/pacoCard"
-// import PacoCardMobile from "@/components/ui/SaboresPage/pacoCardMobile"
 import MobileCatalog from "@/components/ui/SaboresPage/MobileCatalog"
 import StackedCards from "@/components/ui/SaboresPage/stackedCards"
 import { getPaquitos } from "@/lib/directus/queries"

@@ -1,3 +1,12 @@
+# Endurecimiento de la cadena de suministro (pnpm >= 10).
+# minimumReleaseAge: no instalar versiones con menos de 7 días (10080 min) → da
+#   tiempo a que el registro cace y despublique paquetes con malware recién subido.
+# trustPolicy: no-downgrade → rechaza paquetes cuya confianza (provenance/firmas)
+#   se debilita entre resoluciones.
+# blockExoticSubdeps: bloquea subdependencias que no vengan del registro (git:, file:, tarball).
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
 allowBuilds:
   sharp: true
   unrs-resolver: true

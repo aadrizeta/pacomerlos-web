@@ -14,6 +14,8 @@ export default function CarouselSlide({ slide, priority = false }: CarouselSlide
       <picture>
         <source media="(min-width: 1024px)" srcSet={sources.desktop} />
         <source media="(min-width: 768px)" srcSet={sources.tablet} />
+        {/* <img> plano (no next/image): assets servidos directos por Cloudflare/Directus,
+            sin pasar por /_next/image, y art direction vía <picture> (ver CLAUDE.md). */}
         <img
           src={sources.mobile}
           alt=""

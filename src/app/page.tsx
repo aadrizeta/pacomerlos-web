@@ -8,8 +8,8 @@ import { getCarouselSlides, getLaunchSettings, getPaquitos } from '@/lib/directu
 import { contentEnv } from '@/lib/directus/status';
 import { buildCarouselOrder } from '@/utils/carousel-order';
 import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquitosGalery';
-// import ConectorMiddle from '@/components/ui/LangingPage/ConectorMiddle';
 import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentralos';
+// Desactivado por ahora; se reutilizará en el futuro (ver PanelAcordeon.tsx / Panel.tsx).
 // import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
 import { MOCK_STORES } from '@/lib/stores/mock';
 import AnatomiaAlt from '@/components/layout/LandingPage/Anatomia/AnatomiaAlt';

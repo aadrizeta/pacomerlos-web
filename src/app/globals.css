@@ -1010,25 +1010,42 @@ body {
   display: none;
 }
 
+/* ── Contorno de texto reutilizable ("sticker") ──
+   Rodea cada letra con un borde sólido por FUERA (el relleno no se adelgaza).
+   CADA componente que la use debe definir el color del contorno:
+     --outline-color : color del contorno  (obligatorio; fallback de seguridad #fa572a)
+     --outline-fill  : color del relleno    (opcional, default crema)
+   Ej.:  <h1 class="paco-outline" style="--outline-color: var(--paco-orange)">
+   El grosor va literal en cada offset (CSS no tiene bucles); en <768px se
+   sustituye la lista por una más fina (ver override en el @media de abajo).
+   Alternativa de UNA línea (trazo centrado, responsive con clamp):
+     .paco-outline { color: var(--outline-fill, var(--paco-cream));
+       -webkit-text-stroke: clamp(2px, 0.5vw, 5px) var(--outline-color, #fa572a);
+       paint-order: stroke fill; }
+   (más limpia, pero el trazo se come parte del relleno en fuentes finas). */
+.paco-outline {
+  color: var(--outline-fill, var(--paco-cream));
+  text-shadow:
+    -5px -5px 0 var(--outline-color, #fa572a),
+    5px -5px 0 var(--outline-color, #fa572a),
+    -5px 5px 0 var(--outline-color, #fa572a),
+    5px 5px 0 var(--outline-color, #fa572a),
+    -5px 0 0 var(--outline-color, #fa572a),
+    5px 0 0 var(--outline-color, #fa572a),
+    0 -5px 0 var(--outline-color, #fa572a),
+    0 5px 0 var(--outline-color, #fa572a),
+    -7px 0 0 var(--outline-color, #fa572a),
+    7px 0 0 var(--outline-color, #fa572a),
+    0 -7px 0 var(--outline-color, #fa572a),
+    0 7px 0 var(--outline-color, #fa572a);
+}
+
 .abt-intro-title {
   font-family: var(--font-chunko), sans-serif;
   font-size: clamp(4.5rem, 11vw, 10rem);
   line-height: 0.85;
   text-transform: uppercase;
-  color: var(--paco-cream);
-  text-shadow:
-    -5px -5px 0 #fa572a,
-    5px -5px 0 #fa572a,
-    -5px 5px 0 #fa572a,
-    5px 5px 0 #fa572a,
-    -5px 0 0 #fa572a,
-    5px 0 0 #fa572a,
-    0 -5px 0 #fa572a,
-    0 5px 0 #fa572a,
-    -7px 0 0 #fa572a,
-    7px 0 0 #fa572a,
-    0 -7px 0 #fa572a,
-    0 7px 0 #fa572a;
+  --outline-color: #fa572a;
   margin-bottom: 2rem;
 }
 
@@ -1198,6 +1215,13 @@ body {
 }
 
 .abt-empleado {
+  /* Es un <button>: neutralizamos el chrome nativo para que se vea como la tarjeta. */
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
   cursor: pointer;
   transform: rotate(-5deg);
   transition: none;
@@ -1540,17 +1564,21 @@ body {
     padding: 7rem 1.5rem 5rem;
   }
 
+  /* Contorno más fino en móvil (reutilizable) */
+  .paco-outline {
+    text-shadow:
+      -2px -2px 0 var(--outline-color, #fa572a),
+      2px -2px 0 var(--outline-color, #fa572a),
+      -2px 2px 0 var(--outline-color, #fa572a),
+      2px 2px 0 var(--outline-color, #fa572a),
+      -3px 0 0 var(--outline-color, #fa572a),
+      3px 0 0 var(--outline-color, #fa572a),
+      0 -3px 0 var(--outline-color, #fa572a),
+      0 3px 0 var(--outline-color, #fa572a);
+  }
+
   .abt-intro-title {
     font-size: clamp(3.5rem, 14vw, 5rem);
-    text-shadow:
-      -2px -2px 0 #fa572a,
-      2px -2px 0 #fa572a,
-      -2px 2px 0 #fa572a,
-      2px 2px 0 #fa572a,
-      -3px 0 0 #fa572a,
-      3px 0 0 #fa572a,
-      0 -3px 0 #fa572a,
-      0 3px 0 #fa572a;
   }
 
   .abt-intro-br {

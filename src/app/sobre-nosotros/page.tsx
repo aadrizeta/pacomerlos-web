@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import NormaCounter from '@/components/ui/NormaCounter';
 import EmpleadoCard from '@/components/ui/EmpleadoCard';
@@ -15,7 +16,7 @@ export default function AboutUsPage() {
       {/* ── 1. HERO ── */}
       <section className="abt-intro">
         <div className="abt-intro-content">
-          <h1 className="abt-intro-title">ABOUT<br className="abt-intro-br" /> PACO</h1>
+          <h1 className="paco-outline abt-intro-title">ABOUT<br className="abt-intro-br" /> PACO</h1>
           <p className="abt-intro-pill">¿Quieres saber cómo los hacemos?</p>
         </div>
         <div className="abt-intro-scroll" aria-hidden="true">
@@ -36,7 +37,7 @@ export default function AboutUsPage() {
             <p>Nosotros <span className="abt-origen-highlight">no nos quedamos con las ganas</span>, canalizamos toda esa hambre, gochería y antojo hasta crear el <span className="abt-origen-highlight">postre definitivo</span>.</p>
           </div>
           <div className="abt-origen-img">
-            <img src="/img/paco dibujio.png" alt="Paco Merlos" className="abt-origen-dibujo" />
+            <Image src="/img/paco dibujio.png" alt="Paco Merlos" width={1080} height={1350} className="abt-origen-dibujo" />
           </div>
         </div>
       </section>
@@ -85,7 +86,7 @@ export default function AboutUsPage() {
       <section className="abt-respaldo abt-respaldo--orange">
         <div className="abt-respaldo-inner">
           <div className="abt-respaldo-foto">
-            <img src="/img/pacodibujo 2.png" alt="Elaboración artesanal" className="abt-respaldo-img" />
+            <Image src="/img/pacodibujo 2.png" alt="Elaboración artesanal" width={1080} height={844} className="abt-respaldo-img" />
           </div>
           <div className="abt-respaldo-content">
             <h2>HECHOS<br />A MANO</h2>
@@ -117,22 +118,22 @@ export default function AboutUsPage() {
       {/* ── 7. PACOMOJIS ── */}
       <div className="abt-pacomojis" aria-hidden="true">
         <div className="abt-pacomoji-wrap" style={{ '--delay': '0s', '--arc': '90px', left: '5%' } as React.CSSProperties}>
-          <img src="/img/pacomoji.png" className="abt-pacomoji" style={{ '--rot': '-8deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-8deg' } as React.CSSProperties} alt="" />
         </div>
         <div className="abt-pacomoji-wrap" style={{ '--delay': '0.28s', '--arc': '90px', left: '18%' } as React.CSSProperties}>
-          <img src="/img/pacomoji1.png" className="abt-pacomoji" style={{ '--rot': '5deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji1.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '5deg' } as React.CSSProperties} alt="" />
         </div>
         <div className="abt-pacomoji-wrap" style={{ '--delay': '0.57s', '--arc': '90px', left: '32%' } as React.CSSProperties}>
-          <img src="/img/pacomoji2.png" className="abt-pacomoji" style={{ '--rot': '-4deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji2.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-4deg' } as React.CSSProperties} alt="" />
         </div>
         <div className="abt-pacomoji-wrap" style={{ '--delay': '0.85s', '--arc': '90px', left: '55%' } as React.CSSProperties}>
-          <img src="/img/pacomoji4.png" className="abt-pacomoji" style={{ '--rot': '7deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji4.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '7deg' } as React.CSSProperties} alt="" />
         </div>
         <div className="abt-pacomoji-wrap" style={{ '--delay': '1.13s', '--arc': '90px', left: '72%' } as React.CSSProperties}>
-          <img src="/img/pacomoji1.png" className="abt-pacomoji" style={{ '--rot': '-5deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji1.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-5deg' } as React.CSSProperties} alt="" />
         </div>
         <div className="abt-pacomoji-wrap" style={{ '--delay': '1.42s', '--arc': '90px', left: '87%' } as React.CSSProperties}>
-          <img src="/img/pacomoji.png" className="abt-pacomoji" style={{ '--rot': '10deg' } as React.CSSProperties} alt="" />
+          <Image src="/img/pacomoji.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '10deg' } as React.CSSProperties} alt="" />
         </div>
       </div>
 

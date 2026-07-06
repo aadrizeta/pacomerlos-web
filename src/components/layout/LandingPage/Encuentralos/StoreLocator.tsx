@@ -111,9 +111,6 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
     const map = mapInstance.current;
     if (!L || !map) return;
 
-    Object.values(markers.current).forEach((m) => m.remove());
-    markers.current = {};
-
     visibleStores.forEach((s) => {
       const color = CHAINS[s.chain].color;
       const marker = L.marker([s.lat, s.lng], { icon: storeDivIcon(L, color, false) }).addTo(map);
@@ -131,8 +128,6 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
     });
 
     // Marcador del usuario (pin con pulso).
-    userMarker.current?.remove();
-    userMarker.current = null;
     if (userPos) {
       const userIcon = L.divIcon({
         className: '',
@@ -152,6 +147,16 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
 
     // Destaca el más cercano (o el primero) al cambiar ubicación/filtro.
     setActiveId(visibleStores.length ? String(visibleStores[0].id) : null);
+
+    // Cleanup: al reejecutar (cambian las deps) o al desmontar, libera los
+    // marcadores y sus listeners (marker.on('click', …)) creados en esta pasada.
+    // React ejecuta esto antes del siguiente body y al desmontar → sin fugas.
+    return () => {
+      Object.values(markers.current).forEach((m) => m.remove());
+      markers.current = {};
+      userMarker.current?.remove();
+      userMarker.current = null;
+    };
   }, [visibleStores, userPos, mapReady]);
 
   // ── Sincroniza el marcador/lista activos sin reconstruir todo ──
@@ -244,6 +249,7 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="Escribe tu dirección o ciudad…"
+            aria-label="Buscar por dirección o ciudad"
             autoComplete="off"
             className="min-w-0 flex-1 rounded-l-lg border border-r-0 border-paco-dark/20 bg-paco-dark/3 px-4 py-2.5 text-paco-dark outline-none transition placeholder:text-paco-dark/40 focus:border-paco-orange focus:bg-paco-dark/5"
           />
@@ -277,7 +283,16 @@ export default function StoreLocator({ stores }: StoreLocatorProps) {
               <div
                 key={s.id}
                 data-id={s.id}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isActive}
                 onClick={() => setActiveId(String(s.id))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setActiveId(String(s.id));
+                  }
+                }}
                 className={`flex cursor-pointer items-start gap-3.5 rounded-lg border-b border-paco-dark/6 p-3 transition last:border-b-0 ${isActive ? 'bg-paco-orange/12' : 'hover:bg-paco-dark/4'
                   }`}
               >

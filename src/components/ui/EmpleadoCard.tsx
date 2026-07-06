@@ -1,9 +1,10 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function EmpleadoCard() {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLButtonElement>(null);
   const [straight, setStraight] = useState(false);
 
   useEffect(() => {
@@ -30,9 +31,15 @@ export default function EmpleadoCard() {
 
   return (
     <div className="abt-empleado-wrap">
-      <div ref={ref} className="abt-empleado" onClick={handleClick}>
-        <img src="/img/empleado del mes tablon.png" alt="Empleado del mes" />
-      </div>
+      <button
+        ref={ref}
+        type="button"
+        className="abt-empleado"
+        aria-label="Enderezar la foto del empleado del mes"
+        onClick={handleClick}
+      >
+        <Image src="/img/empleado del mes tablon.png" alt="Empleado del mes" width={1034} height={1199} />
+      </button>
     </div>
   );
 }

@@ -36,6 +36,8 @@ export default function PacoCard({ paquito, reverse = false }: PacoCardProps) {
             media="(min-width: 768px)"
             srcSet={assetUrl(paquito.image_main, { width: IMG_DESKTOP, format: 'webp', quality: 80 })}
           />
+          {/* <img> plano (no next/image): assets servidos directos por Cloudflare/Directus,
+              sin pasar por /_next/image, y art direction vía <picture> (ver CLAUDE.md). */}
           <img
             src={assetUrl(paquito.image_main, { width: IMG_MOBILE, format: 'webp', quality: 80 })}
             alt={paquito.name}

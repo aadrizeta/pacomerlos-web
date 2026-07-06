@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import Footer from "@/components/layout/Footer/Footer";
 import Header from "@/components/layout/Header/Header";
 import "./globals.css";
@@ -62,12 +63,13 @@ export default function RootLayout({
     >
       <head>
         {/* Marca que hay JS antes de pintar: habilita el estado inicial oculto
-            del scroll-reveal sin FOUC. Sin JS, el contenido se ve siempre. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "document.documentElement.classList.add('js-ready')",
-          }}
-        />
+            del scroll-reveal sin FOUC. Sin JS, el contenido se ve siempre.
+            strategy="beforeInteractive": next/script lo inyecta en el HTML del
+            servidor y se ejecuta antes de la hidratación (equivalente a un script
+            en <head> para evitar el parpadeo). */}
+        <Script id="js-ready" strategy="beforeInteractive">
+          {`document.documentElement.classList.add('js-ready')`}
+        </Script>
       </head>
       <body className="flex min-h-screen flex-col">
         <Header />

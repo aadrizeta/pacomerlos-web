@@ -100,6 +100,7 @@ export default function EmailInput({ launched = false }: { launched?: boolean })
             name="website"
             tabIndex={-1}
             autoComplete="off"
+            aria-label="No rellenar"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
           />
