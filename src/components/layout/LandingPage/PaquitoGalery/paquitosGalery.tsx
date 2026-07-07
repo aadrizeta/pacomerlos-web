@@ -2,6 +2,7 @@ import Image from 'next/image';
 import PaquitosCarousel from '../../../ui/LangingPage/paquitosCarousel';
 import GalleryButton from '../../../ui/LangingPage/galleryButtton';
 import Reveal from '@/components/ui/Reveal';
+import SectionHeader from '@/components/ui/SectionHeader';
 import type { Paquito } from '@/types/paquitos';
 
 interface PaquitosGaleryProps {
@@ -19,14 +20,10 @@ export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
         repeat
         className="flex flex-col justify-center items-center"
       >
-        <div className="w-full flex justify-center items-center gap-4 opacity-80 text-paco-orange">
-          <div className="side-bars" />
-          <p className="text-center text-xl uppercase tracking-widest font-now">Nuestros Sabores</p>
-          <div className="side-bars" />
-        </div>
-        <h2 className="text-4xl md:text-5xl lg:text-8xl font-chunko uppercase text-center mt-3 max-w-2xl text-paco-orange">
-          Conoce cada uno
-        </h2>
+        <SectionHeader
+          kicker="Nuestros Sabores"
+          title="Conoce cada uno"
+        />
         <Image
           src="/icons/flecha-hacia-abajo.svg"
           alt=""

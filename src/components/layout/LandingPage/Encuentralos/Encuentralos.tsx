@@ -1,6 +1,7 @@
 import Reveal from '@/components/ui/Reveal';
 import StoreLocator from './StoreLocator';
 import type { Store } from '@/types/stores';
+import SectionHeader from '@/components/ui/SectionHeader';
 
 interface EncuentralosProps {
   stores: Store[];
@@ -21,7 +22,7 @@ export default function Encuentralos({ stores }: EncuentralosProps) {
     >
       <div className="mx-auto max-w-6xl">
         {/* Eyebrow */}
-        <Reveal className="mb-5 flex items-center justify-center gap-3.5">
+        {/* <Reveal className="mb-5 flex items-center justify-center gap-3.5">
           <span className="h-px w-8 bg-paco-orange/30" />
           <span className="text-xs font-semibold uppercase tracking-[0.22em] text-paco-dark/50">
             Puntos de venta
@@ -37,6 +38,20 @@ export default function Encuentralos({ stores }: EncuentralosProps) {
           Dónde
           <br />
           encontrarlos
+        </Reveal> */}
+        <Reveal
+          as="div"
+          delay={1}
+          distance="2.5rem"
+          duration={1.5}
+          repeat
+        >
+          <SectionHeader
+            kicker="Puntos de venta"
+            title="Dónde encontrarlos"
+            kickerColor="color-mix(in srgb, var(--paco-dark) 50%, transparent)"
+            titleSizeOverride="clamp(2.25rem, 9.4vw, 6rem)"
+          />
         </Reveal>
 
         <Reveal

@@ -14,13 +14,14 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 2,
   },
+  // Autoriza las subredes locales en desarrollo (HMR / _next). Al desarrollar desde
+  // varias máquinas, cada una coge una IP distinta por DHCP; el comodín evita tener
+  // que añadir cada IP a mano. Solo afecta a `next dev`, nunca a producción.
+  // OJO: cada `*` casa UN solo octeto (Next separa el host por puntos), por eso hay
+  // que poner un `*` por octeto variable — "10.*" NO casaría "10.0.0.5".
   allowedDevOrigins: [
-    "192.168.1.23",
-    "192.168.1.24",
-    "192.168.1.79",
-    "192.168.1.14",
-    "192.168.1.16",
-    "192.168.1.22"
+    "192.168.*.*", // redes domésticas típicas (192.168.0.0/16: cubre .0.x y .1.x)
+    "10.*.*.*",    // redes de oficina / VPN (10.0.0.0/8)
   ],
   images: {
     remotePatterns: [

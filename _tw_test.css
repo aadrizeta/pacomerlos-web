@@ -1,0 +1,4 @@
+@import "tailwindcss";
+.test {
+  @apply bg-[linear-gradient(to_bottom,rgba(0,0,0,0.45)_0%,rgba(0,0,0,0.3)_60%,rgba(0,0,0,0.6)_100%),url('/img/SOBRE_PACO.png')] bg-center bg-cover bg-no-repeat;
+}

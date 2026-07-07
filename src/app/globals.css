@@ -29,10 +29,12 @@
   --font-now: var(--font-now), system-ui, sans-serif;
   --font-chunko: var(--font-chunko), Impact, sans-serif;
 
-  /* Tamaños de fuente fluidos propios (más allá del 9xl de Tailwind). Al ir en
-     el namespace --text-*, generan una utilidad `text-<nombre>` que fija SOLO
-     font-size (sin line-height, salvo que se defina --text-*--line-height). */
   --text-card-word: clamp(3.5rem, 10vw, 8.75rem);
+  --text-title-hero: clamp(4.5rem, 11vw, 10rem);
+  --text-title-big: clamp(3rem, 7vw, 6rem);
+  /* Equivalente a text-5xl (móvil, 3rem) → text-8xl (desktop, 6rem). */
+  --text-section-title: clamp(3rem, 9.4vw, 6rem);
+
 }
 
 html {
@@ -48,10 +50,39 @@ body {
 
 @layer components {
 
+  .paco-outline {
+    color: var(--outline-fill, var(--paco-cream));
+    text-shadow:
+      -5px -5px 0 var(--outline-color, var(--paco-orange)),
+      5px -5px 0 var(--outline-color, var(--paco-orange)),
+      -5px 5px 0 var(--outline-color, var(--paco-orange)),
+      5px 5px 0 var(--outline-color, var(--paco-orange)),
+      -5px 0 0 var(--outline-color, var(--paco-orange)),
+      5px 0 0 var(--outline-color, var(--paco-orange)),
+      0 -5px 0 var(--outline-color, var(--paco-orange)),
+      0 5px 0 var(--outline-color, var(--paco-orange)),
+      -7px 0 0 var(--outline-color, var(--paco-orange)),
+      7px 0 0 var(--outline-color, var(--paco-orange)),
+      0 -7px 0 var(--outline-color, var(--paco-orange)),
+      0 7px 0 var(--outline-color, var(--paco-orange));
+
+    /* Contorno más fino en móvil, en la misma clase (Tailwind v4) */
+    @variant max-md {
+      text-shadow:
+        -2px -2px 0 var(--outline-color, var(--paco-orange)),
+        2px -2px 0 var(--outline-color, var(--paco-orange)),
+        -2px 2px 0 var(--outline-color, var(--paco-orange)),
+        2px 2px 0 var(--outline-color, var(--paco-orange)),
+        -3px 0 0 var(--outline-color, var(--paco-orange)),
+        3px 0 0 var(--outline-color, var(--paco-orange)),
+        0 -3px 0 var(--outline-color, var(--paco-orange)),
+        0 3px 0 var(--outline-color, var(--paco-orange));
+    }
+  }
   /* ===== Responsive padding ===== */
   .padding-responsive {
     @apply mx-auto;
-    max-width: 80rem;
+    max-width: 84rem;
     padding-left: var(--padding-mobile);
     padding-right: var(--padding-mobile);
   }
@@ -292,7 +323,7 @@ body {
     mask: var(--icon) center / contain no-repeat;
     transition: background-color 0.2s ease, transform 0.2s ease;
   }
-
+  
   .icon-link:hover {
     background-color: var(--hover, var(--paco-orange));
     transform: translateY(-2px);
@@ -968,10 +999,6 @@ body {
    pacomojis → responsive. Las clases compartidas (.btn, .pg-*) van
    justo debajo, tras el cierre de esta sección.
    ══════════════════════════════════════════════════════════════ */
-.sobre-nosotros {
-  position: relative;
-  z-index: 20;
-}
 
 .abt-wave {
   line-height: 0;
@@ -985,112 +1012,22 @@ body {
 /* Editorial intro */
 .abt-intro {
   background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.6) 100%),
-    url('/img/SOBRE PACO.png') center/cover no-repeat;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 8rem 2rem 6rem;
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.abt-intro-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
-}
-
-.abt-intro-br {
-  display: none;
-}
-
-/* ── Contorno de texto reutilizable ("sticker") ──
-   Rodea cada letra con un borde sólido por FUERA (el relleno no se adelgaza).
-   CADA componente que la use debe definir el color del contorno:
-     --outline-color : color del contorno  (obligatorio; fallback de seguridad #fa572a)
-     --outline-fill  : color del relleno    (opcional, default crema)
-   Ej.:  <h1 class="paco-outline" style="--outline-color: var(--paco-orange)">
-   El grosor va literal en cada offset (CSS no tiene bucles); en <768px se
-   sustituye la lista por una más fina (ver override en el @media de abajo).
-   Alternativa de UNA línea (trazo centrado, responsive con clamp):
-     .paco-outline { color: var(--outline-fill, var(--paco-cream));
-       -webkit-text-stroke: clamp(2px, 0.5vw, 5px) var(--outline-color, #fa572a);
-       paint-order: stroke fill; }
-   (más limpia, pero el trazo se come parte del relleno en fuentes finas). */
-.paco-outline {
-  color: var(--outline-fill, var(--paco-cream));
-  text-shadow:
-    -5px -5px 0 var(--outline-color, #fa572a),
-    5px -5px 0 var(--outline-color, #fa572a),
-    -5px 5px 0 var(--outline-color, #fa572a),
-    5px 5px 0 var(--outline-color, #fa572a),
-    -5px 0 0 var(--outline-color, #fa572a),
-    5px 0 0 var(--outline-color, #fa572a),
-    0 -5px 0 var(--outline-color, #fa572a),
-    0 5px 0 var(--outline-color, #fa572a),
-    -7px 0 0 var(--outline-color, #fa572a),
-    7px 0 0 var(--outline-color, #fa572a),
-    0 -7px 0 var(--outline-color, #fa572a),
-    0 7px 0 var(--outline-color, #fa572a);
-}
-
-.abt-intro-title {
-  font-family: var(--font-chunko), sans-serif;
-  font-size: clamp(4.5rem, 11vw, 10rem);
-  line-height: 0.85;
-  text-transform: uppercase;
-  --outline-color: #fa572a;
-  margin-bottom: 2rem;
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.6) 100%),
+      url('/img/pacomerlos-about-us-banner.png') center/cover no-repeat;
+  @apply relative z-10 flex flex-col items-center justify-center py-32 px-8 min-h-screen overflow-hidden
 }
 
 .abt-intro-pill {
-  font-family: var(--font-now), sans-serif;
-  font-weight: 400;
-  font-size: clamp(1rem, 1.6vw, 1.25rem);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #fffff5;
-  background: #fa572a;
-  padding: 0.7rem 1.4rem;
-  border-radius: 999px;
-  margin: 0;
-  display: inline-block;
-  box-shadow: 0 4px 20px rgba(250, 87, 42, 0.4);
+  @apply font-now text-base md:text-xl uppercase text-paco-cream bg-paco-orange px-3 md:px-6 py-1.5 md:py-3 rounded-full inline-block
 }
 
 .abt-intro-scroll {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-}
-
-.abt-intro-scroll-label {
-  font-family: var(--font-now), sans-serif;
-  font-weight: 600;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: #fffff5;
+  @apply absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2
 }
 
 .abt-intro-scroll-arrow {
-  width: 26px;
-  height: 26px;
-  color: #fffff5;
   animation: scroll-bounce 1.4s ease-in-out infinite;
-  margin-top: 0.2rem;
+  @apply w-6 h-6 text-paco-cream mt-1
 }
 
 @keyframes scroll-bounce {
@@ -1105,174 +1042,30 @@ body {
   }
 }
 
-.abt-origen {
-  background: var(--paco-orange);
-  padding: 7rem clamp(2rem, 6vw, 6rem);
-}
-
-.abt-origen-inner {
-  max-width: 80rem;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.abt-origen-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.abt-origen-img {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.abt-origen-dibujo {
-  width: 100%;
-  max-width: 460px;
-  height: auto;
-  filter: drop-shadow(-4px 6px 12px rgba(0, 0, 0, 0.45));
-  transform: translateX(3rem);
-  transition: transform 0.35s ease, filter 0.35s ease;
-  cursor: pointer;
-}
-
-.abt-origen-dibujo:hover {
-  transform: translateX(3rem) scale(1.03) rotate(-1deg);
-  filter: drop-shadow(-4px 8px 20px rgba(0, 0, 0, 0.25));
-}
-
-.abt-origen-title {
-  font-family: var(--font-chunko), sans-serif;
-  font-size: clamp(3rem, 7vw, 7rem);
-  line-height: 1.05;
-  text-transform: uppercase;
-  color: var(--paco-cream);
-  margin-top: 0;
-  margin-bottom: 2.5rem;
-  padding-top: 0.2em;
-}
-
-.abt-origen-text p {
-  font-family: var(--font-now), sans-serif;
-  font-size: clamp(1.3rem, 2vw, 1.7rem);
-  line-height: 1.3;
-  color: rgba(255, 255, 245, 0.75);
-  font-weight: 400;
-}
-
-.abt-origen-highlight {
-  color: #fffff5;
-  font-weight: 700;
-}
-
-.abt-origen-text p+p {
-  margin-top: 1.75rem;
-}
-
-.abt-producto {
-  background: var(--paco-cream);
-  padding: 7rem clamp(2rem, 6vw, 6rem);
-}
-
-.abt-producto--purple {
-  background: var(--paco-purple) !important;
-}
-
-.abt-producto--purple .abt-producto-title {
-  color: var(--paco-cream);
-}
-
-.abt-producto-inner {
-  max-width: 80rem;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-}
-
-.abt-producto-text {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-}
-
-.abt-producto-img {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.abt-empleado-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.abt-empleado {
-  /* Es un <button>: neutralizamos el chrome nativo para que se vea como la tarjeta. */
-  appearance: none;
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  transform: rotate(-5deg);
-  transition: none;
-  max-width: 680px;
-  width: 100%;
-  touch-action: manipulation;
-}
-
-.abt-empleado:hover {
-  transform: rotate(-5deg);
-}
-
-.abt-empleado.is-straight {
-  animation: pcom-snap 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.abt-empleado.is-falling {
-  animation: pcom-fall 0.75s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-}
-
-.abt-empleado img {
-  width: 100%;
-  height: auto;
+.abt-section-image {
   display: block;
+  max-width: 100%;
+  filter: drop-shadow(-4px 6px 12px rgba(0, 0, 0, 0.45));
+  transition: transform 0.35s ease, filter 0.35s ease;
 }
 
-.abt-producto-title {
-  font-family: var(--font-chunko), sans-serif;
-  font-size: clamp(3rem, 6vw, 6rem);
-  line-height: 0.87;
-  text-transform: uppercase;
-  color: var(--paco-orange);
-  margin-bottom: 1.25rem;
+@media (min-width: 1024px) {
+  .abt-section-image {
+    transform: translateX(-3rem);
+  }
+  .abt-section-image:hover {
+    transform: translateX(-3rem) scale(1.03) rotate(-1deg);
+  }
+  .abt-section-image--reverse {
+    transform: translateX(3rem);
+  }
+  .abt-section-image--reverse:hover {
+    transform: translateX(3rem) scale(1.03) rotate(-1deg);
+  }
 }
 
-.abt-producto-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  text-align: left;
-}
-
-.abt-producto-body p {
-  font-family: var(--font-now), sans-serif;
-  font-size: clamp(1.3rem, 2vw, 1.7rem);
-  line-height: 1.3;
-  color: rgba(255, 255, 245, 0.85);
-}
-
-.abt-producto-text .abt-respaldo-divider {
-  margin-bottom: 1.25rem;
+.abt-section-image:hover {
+  filter: drop-shadow(-4px 8px 20px rgba(0, 0, 0, 0.25));
 }
 
 /* Norma de tres — sección standalone */
@@ -1558,112 +1351,6 @@ body {
 
 /* Sobre Nosotros — responsive (< 768px) */
 @media (max-width: 767px) {
-
-  /* Hero */
-  .abt-intro {
-    padding: 7rem 1.5rem 5rem;
-  }
-
-  /* Contorno más fino en móvil (reutilizable) */
-  .paco-outline {
-    text-shadow:
-      -2px -2px 0 var(--outline-color, #fa572a),
-      2px -2px 0 var(--outline-color, #fa572a),
-      -2px 2px 0 var(--outline-color, #fa572a),
-      2px 2px 0 var(--outline-color, #fa572a),
-      -3px 0 0 var(--outline-color, #fa572a),
-      3px 0 0 var(--outline-color, #fa572a),
-      0 -3px 0 var(--outline-color, #fa572a),
-      0 3px 0 var(--outline-color, #fa572a);
-  }
-
-  .abt-intro-title {
-    font-size: clamp(3.5rem, 14vw, 5rem);
-  }
-
-  .abt-intro-br {
-    display: block;
-  }
-
-  .abt-intro-pill {
-    font-size: 0.82rem;
-    padding: 0.6rem 1.1rem;
-  }
-
-  /* Nuestros Orígenes */
-  .abt-origen {
-    padding: 4rem 1.5rem;
-  }
-
-  .abt-origen-inner {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .abt-origen-img {
-    order: -1;
-  }
-
-  .abt-origen-dibujo {
-    transform: none;
-    max-width: 75%;
-    margin: 0 auto;
-  }
-
-  .abt-origen-title {
-    font-size: clamp(2.5rem, 13vw, 4rem);
-    margin-bottom: 0.5rem;
-  }
-
-  .abt-origen-text .abt-respaldo-divider {
-    margin-bottom: 1.25rem;
-  }
-
-  .abt-origen-text p {
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-
-  .abt-origen-text p+p {
-    margin-top: 1rem;
-  }
-
-  /* Somos Otro Rollo */
-  .abt-producto {
-    padding: 4rem 1.5rem;
-  }
-
-  .abt-producto-inner {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
-  }
-
-  .abt-producto-img {
-    order: -1;
-  }
-
-  .abt-producto-title {
-    font-size: clamp(2.8rem, 14vw, 5rem);
-    margin-bottom: 1.5rem;
-  }
-
-  .abt-producto-body {
-    gap: 1rem;
-  }
-
-  .abt-producto-body p {
-    font-size: 1.1rem;
-  }
-
-  .abt-empleado {
-    max-width: 75%;
-    margin: 0 auto;
-  }
-
-  /* Norma de tres */
-  .abt-norma {
-    padding: 3rem 1.5rem;
-  }
 
   .abt-norma-grid {
     grid-template-columns: repeat(2, 1fr);

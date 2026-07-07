@@ -2,25 +2,65 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import NormaCounter from '@/components/ui/NormaCounter';
-import EmpleadoCard from '@/components/ui/EmpleadoCard';
+import AbtUsSection from '@/components/ui/AboutUs/AbtUsSection';
+import pacoNevera from '../../../public/img/paco-nevera.png';
+import paquitoDeMes from '../../../public/img/paquito-de-mes.png';
+import pacoDibujoAMano from '../../../public/img/paco-dibujo-a-mano.png';
+import pacomoji from '../../../public/img/pacomoji.png';
+import pacomoji1 from '../../../public/img/pacomoji1.png';
+import pacomoji2 from '../../../public/img/pacomoji2.png';
+import pacomoji4 from '../../../public/img/pacomoji4.png';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Paco Merlos',
   description: 'Repostería moderna con personalidad propia, nacida en Madrid.',
 };
 
+const PACOMOJIS = [
+  { img: pacomoji, delay: '0s', left: '5%', rot: '-8deg' },
+  { img: pacomoji1, delay: '0.28s', left: '18%', rot: '5deg' },
+  { img: pacomoji2, delay: '0.57s', left: '32%', rot: '-4deg' },
+  { img: pacomoji4, delay: '0.85s', left: '55%', rot: '7deg' },
+  { img: pacomoji1, delay: '1.13s', left: '72%', rot: '-5deg' },
+  { img: pacomoji, delay: '1.42s', left: '87%', rot: '10deg' },
+]
+
+const SECTION_DATA = [
+  {
+    title: 'NUESTROS ORÍGENES',
+    text1: 'Pacomerlos surge de un antojo de medianoche, de ese quiero y no puedo a altas horas de la noche.',
+    text2: 'Nosotros no nos quedamos con las ganas, canalizamos toda esa hambre, gochería y antojo hasta crear el postre definitivo.',
+    img: pacoNevera,
+    imgAlt: 'Paco Merlos',
+  },
+  {
+    title: 'SOMOS OTRO ROLLO',
+    text1: 'Ni cruasán, ni suizo, ni donut. Un Paquito es masa madre artesanal, relleno de crema y toppings brutales.',
+    text2: 'No hacemos dulces genéricos: los hemos personificado y les hemos dado vida propia. Cada uno es único, irreverente y con una personalidad y sabor que no encontrarás en ningún otro sitio.',
+    img: paquitoDeMes,
+    imgAlt: 'Paquito del mes',
+  },
+  {
+    title: 'HECHOS A MANO',
+    text1: 'Cada Paquito se moldea a mano en obradores artesanos de Madrid. Sin procesos industriales, con producto nacional y directo del horno al mostrador.',
+    text2: 'Para hacerlo realidad, nos hemos aliado con La Fresería: una colaboración de lo más TOP entre dos marcas que comparten la misma obsesión por el sabor brutal.',
+    img: pacoDibujoAMano,
+    imgAlt: 'Elaboración artesanal',
+  }
+]
+
 export default function AboutUsPage() {
   return (
-    <main className="sobre-nosotros">
-
-      {/* ── 1. HERO ── */}
+    <>
       <section className="abt-intro">
-        <div className="abt-intro-content">
-          <h1 className="paco-outline abt-intro-title">ABOUT<br className="abt-intro-br" /> PACO</h1>
-          <p className="abt-intro-pill">¿Quieres saber cómo los hacemos?</p>
+        <div className="flex flex-col items-center text-center gap-5">
+          <h1 className="paco-outline text-title-hero font-chunko leading-none">
+            ABOUT PACO
+          </h1>
+          <span className="abt-intro-pill">¿Quieres saber cómo los hacemos?</span>
         </div>
         <div className="abt-intro-scroll" aria-hidden="true">
-          <span className="abt-intro-scroll-label">Baja y te lo contamos</span>
+          <span className="font-now text-paco-cream uppercase text-base font-semibold tracking-wider">Baja y te lo contamos</span>
           <svg className="abt-intro-scroll-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4v16M5 13l7 7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -28,83 +68,45 @@ export default function AboutUsPage() {
       </section>
 
       {/* ── 2. ORIGEN ── */}
-      <section className="abt-origen">
-        <div className="abt-origen-inner">
-          <div className="abt-origen-text">
-            <h2 className="abt-origen-title">NUESTROS ORÍGENES</h2>
-            <div className="abt-respaldo-divider" />
-            <p>Pacomerlos surge de un <span className="abt-origen-highlight">antojo de medianoche</span>, de ese quiero y no puedo a altas horas de la noche.</p>
-            <p>Nosotros <span className="abt-origen-highlight">no nos quedamos con las ganas</span>, canalizamos toda esa hambre, gochería y antojo hasta crear el <span className="abt-origen-highlight">postre definitivo</span>.</p>
-          </div>
-          <div className="abt-origen-img">
-            <Image src="/img/paco dibujio.png" alt="Paco Merlos" width={1080} height={1350} className="abt-origen-dibujo" />
-          </div>
-        </div>
-      </section>
-
-      <div className="abt-wave" style={{ background: 'var(--paco-orange)' }} aria-hidden="true">
-        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0,40 C320,80 640,0 960,45 C1140,72 1320,20 1440,40 L1440,80 L0,80 Z" fill="var(--paco-purple)" />
-        </svg>
-      </div>
-
+      <AbtUsSection
+        title={SECTION_DATA[0].title}
+        text1={SECTION_DATA[0].text1}
+        text2={SECTION_DATA[0].text2}
+        img={SECTION_DATA[0].img}
+        imgAlt={SECTION_DATA[0].imgAlt}
+        bgColor="var(--paco-orange)"
+        waveTop={false}
+        waveBottom={true}
+        waveBottomFill="var(--paco-purple)"
+        reverse={true}
+      />
       {/* ── 3. EL PRODUCTO ── */}
-      <section className="abt-producto abt-producto--purple">
-        <div className="abt-producto-inner">
-          <div className="abt-producto-img">
-            <EmpleadoCard />
-          </div>
-          <div className="abt-producto-text">
-            <h2 className="abt-producto-title">SOMOS<br />OTRO ROLLO</h2>
-            <div className="abt-respaldo-divider" />
-            <div className="abt-producto-body">
-              <p>Ni cruasán, ni suizo, ni donut. Un Paquito es <strong>masa madre artesanal, relleno de crema y toppings brutales.</strong></p>
-              <p>No hacemos dulces genéricos: los hemos personificado y les hemos dado vida propia. <strong>Cada uno es único, irreverente y con una personalidad y sabor que no encontrarás en ningún otro sitio.</strong></p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="abt-wave" style={{ background: 'var(--paco-purple)' }} aria-hidden="true">
-        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0,40 C320,80 640,0 960,45 C1140,72 1320,20 1440,40 L1440,80 L0,80 Z" fill="var(--paco-cream)" />
-        </svg>
-      </div>
-
-      {/* ── 4. LA NORMA DE TRES — única aparición de los números ── */}
+      <AbtUsSection
+        title={SECTION_DATA[1].title}
+        text1={SECTION_DATA[1].text1}
+        text2={SECTION_DATA[1].text2}
+        img={SECTION_DATA[1].img}
+        imgAlt={SECTION_DATA[1].imgAlt}
+        bgColor="var(--paco-purple)"
+        waveTop={false}
+        waveBottom={true}
+        waveBottomFill="var(--paco-cream)"
+      />
       <section className="abt-norma">
         <NormaCounter />
       </section>
-
-      <div className="abt-wave" style={{ background: 'var(--paco-cream)' }} aria-hidden="true">
-        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0,40 C320,80 640,0 960,45 C1140,72 1320,20 1440,40 L1440,80 L0,80 Z" fill="var(--paco-orange)" />
-        </svg>
-      </div>
-
-      {/* ── 5. OBRADORES ── */}
-      <section className="abt-respaldo abt-respaldo--orange">
-        <div className="abt-respaldo-inner">
-          <div className="abt-respaldo-foto">
-            <Image src="/img/pacodibujo 2.png" alt="Elaboración artesanal" width={1080} height={844} className="abt-respaldo-img" />
-          </div>
-          <div className="abt-respaldo-content">
-            <h2>HECHOS<br />A MANO</h2>
-            <div className="abt-respaldo-divider" />
-            <div className="abt-respaldo-text">
-              <p>Cada Paquito se moldea a mano <strong>en obradores artesanos de Madrid.</strong> Sin procesos industriales, con producto nacional y directo del horno al mostrador.</p>
-              <p>Para hacerlo realidad, nos hemos aliado con La Fresería: una colaboración de lo más TOP entre dos marcas que comparten la misma obsesión por el sabor brutal.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="abt-wave" style={{ background: 'var(--paco-orange)' }} aria-hidden="true">
-        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0,40 C320,80 640,0 960,45 C1140,72 1320,20 1440,40 L1440,80 L0,80 Z" fill="var(--paco-purple)" />
-        </svg>
-      </div>
-
+      <AbtUsSection
+        title={SECTION_DATA[2].title}
+        text1={SECTION_DATA[2].text1}
+        text2={SECTION_DATA[2].text2}
+        img={SECTION_DATA[2].img}
+        imgAlt={SECTION_DATA[2].imgAlt}
+        bgColor="var(--paco-orange)"
+        waveTop={true}
+        waveBottom={true}
+        waveTopFill="var(--paco-cream)"
+        waveBottomFill="var(--paco-purple)"
+      />
       {/* ── 6. CTA ── */}
       <section className="abt-cta abt-cta--purple">
         <p className="abt-cta-eyebrow">Créenos o pruébalo</p>
@@ -117,26 +119,13 @@ export default function AboutUsPage() {
 
       {/* ── 7. PACOMOJIS ── */}
       <div className="abt-pacomojis" aria-hidden="true">
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '0s', '--arc': '90px', left: '5%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-8deg' } as React.CSSProperties} alt="" />
-        </div>
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '0.28s', '--arc': '90px', left: '18%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji1.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '5deg' } as React.CSSProperties} alt="" />
-        </div>
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '0.57s', '--arc': '90px', left: '32%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji2.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-4deg' } as React.CSSProperties} alt="" />
-        </div>
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '0.85s', '--arc': '90px', left: '55%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji4.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '7deg' } as React.CSSProperties} alt="" />
-        </div>
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '1.13s', '--arc': '90px', left: '72%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji1.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '-5deg' } as React.CSSProperties} alt="" />
-        </div>
-        <div className="abt-pacomoji-wrap" style={{ '--delay': '1.42s', '--arc': '90px', left: '87%' } as React.CSSProperties}>
-          <Image src="/img/pacomoji.png" width={120} height={120} className="abt-pacomoji" style={{ '--rot': '10deg' } as React.CSSProperties} alt="" />
-        </div>
+        {PACOMOJIS.map((p, i) => (
+          <div key={i} className="abt-pacomoji-wrap" style={{ '--delay': p.delay, '--arc': '90px', left: p.left } as React.CSSProperties}>
+            <Image src={p.img} width={120} height={120} className="abt-pacomoji" style={{ '--rot': p.rot } as React.CSSProperties} alt="" />
+          </div>
+        ))}
       </div>
 
-    </main>
+    </>
   );
 }
