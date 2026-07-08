@@ -51,17 +51,16 @@ export default function NormaCounter() {
   }, []);
 
   return (
-    <div className="abt-norma-grid" ref={wrapperRef}>
+    <div className="abt-norma-grid padding-responsive" ref={wrapperRef}>
       {ITEMS.map((item, i) => (
         <div key={item.title} className="abt-norma-item">
           <span
-            className="abt-norma-num"
             ref={(el) => { numsRef.current[i] = el; }}
           >
             {item.target}{item.suffix}
           </span>
-          <h3 className="abt-norma-title-item">{item.title}</h3>
-          <p className="abt-norma-desc">{item.desc}</p>
+          <h3>{item.title}</h3>
+          <p>{item.desc}</p>
         </div>
       ))}
     </div>

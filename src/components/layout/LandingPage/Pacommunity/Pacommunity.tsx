@@ -87,6 +87,7 @@ export default function Pacommunity() {
           <SectionHeader
             kicker="Galería @paco_merlos"
             title="pacommunity"
+            titleSizeOverride="clamp(2.25rem, 9.4vw, 8rem)"
           />
         </Reveal>
         <Reveal as="div" className="flex flex-col items-center gap-4" repeat direction="up" distance="2rem" duration={1.5}>

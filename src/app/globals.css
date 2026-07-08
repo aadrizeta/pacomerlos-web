@@ -948,66 +948,29 @@ body {
   filter: drop-shadow(-4px 8px 20px rgba(0, 0, 0, 0.25));
 }
 
-/* Norma de tres — sección standalone */
-.abt-norma {
-  background: var(--paco-cream);
-  padding: 7rem clamp(2rem, 6vw, 6rem) 5rem;
-}
-
 .abt-norma-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0;
-  max-width: 72rem;
-  margin: 0 auto;
-  text-align: center;
+  @apply grid grid-cols-2 md:grid-cols-3 gap-0 text-center
 }
-
 .abt-norma-item {
-  padding-right: 3rem;
-  border-right: 1px solid rgba(15, 15, 15, 0.08);
-  padding-left: 0;
+  @apply flex flex-col gap-2 justify-center px-4 py-6 text-center border-b border-[rgba(15,15,15,0.08)]
+    first:border-r
+    last:col-span-full last:border-b-0
+    md:py-0 md:pl-0 md:pr-12 md:text-left md:border-b-0 md:border-r
+    md:[&+&]:pl-12
+    md:last:col-auto md:last:border-r-0;
 }
-
-.abt-norma-item+.abt-norma-item {
-  padding-left: 3rem;
+.abt-norma-item span{
+  @apply font-chunko text-card-word text-paco-orange leading-none text-center
 }
-
-.abt-norma-item:last-child {
-  border-right: none;
+.abt-norma-item h3{
+  @apply font-now font-bold text-base lg:text-xl uppercase text-paco-orange text-center tracking-wide w-full;
 }
-
-.abt-norma-num {
-  font-family: var(--font-chunko), sans-serif;
-  font-size: clamp(5rem, 10vw, 9rem);
-  color: var(--paco-orange);
-  line-height: 0.85;
-  display: block;
-  margin-bottom: 1rem;
-}
-
-.abt-norma-title-item {
-  font-family: var(--font-now), sans-serif;
-  font-weight: 700;
-  font-size: clamp(0.85rem, 1.2vw, 1rem);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--paco-orange);
-  line-height: 1;
-  margin-bottom: 0.75rem;
-}
-
-.abt-norma-desc {
-  font-family: var(--font-now), sans-serif;
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: rgba(15, 15, 15, 0.55);
-  max-width: 28ch;
-  margin: 0 auto;
+.abt-norma-item p{
+  @apply font-now text-base lg:text-xl text-paco-dark/50 text-center max-w-50 lg:max-w-70 mx-auto w-full;
 }
 
 .abt-cta {
-  @apply bg-paco-purple py-28 px-8 text-center
+  @apply bg-paco-purple pt-28 pb-12 px-8 text-center
 }
 
 /* Pacomojis — parábola estrecha */
@@ -1072,44 +1035,100 @@ body {
   }
 }
 
-@media (max-width: 767px) {
+/* ═══════════════════════════════════════════════════════════════ */
+/* PACOMOJIS v2 — alternativa: saltan, aterrizan en fila y hacen ola */
+/* (independiente de .abt-pacomoji* para poder comparar y hacer      */
+/*  fallback fácil a la versión anterior)                            */
+/* ═══════════════════════════════════════════════════════════════ */
 
-  .abt-norma-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
-  }
-
-  .abt-norma-item {
-    border-right: none;
-    border-bottom: 1px solid rgba(15, 15, 15, 0.08);
-    padding: 1.5rem 1rem;
-    text-align: center;
-  }
-
-  .abt-norma-item:nth-child(1) {
-    border-right: 1px solid rgba(15, 15, 15, 0.08);
-  }
-
-  .abt-norma-item:last-child {
-    grid-column: 1 / -1;
-    border-bottom: none;
-    border-right: none;
-  }
-
-  .abt-norma-item+.abt-norma-item {
-    padding-left: 1rem;
-  }
-
-  .abt-norma-num {
-    font-size: clamp(2.8rem, 14vw, 4.5rem);
-  }
-
-  .abt-norma-desc {
-    font-size: 0.85rem;
-    max-width: 22ch;
-  }
-
+/* Contenedor: solo aporta contexto de posición y el fondo morado que continúa
+   el de la sección CTA. La ubicación/altura exacta es afinable. */
+.pacomoji-row {
+  position: relative;
+  height: 150px;
+  background: var(--paco-purple);
 }
+
+.pacomoji {
+  position: absolute;
+  bottom: 0;
+  /* Tamaño responsive: pequeño en móvil, crece con el viewport hasta el techo
+     `--pm-size` (lo fija el prop `size` de <Pacomoji>) en desktop. */
+  width: clamp(52px, 10vw, var(--pm-size, 110px));
+  transform-origin: bottom center;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3));
+  will-change: transform;
+}
+
+.pacomoji-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Estado inicial (con JS): oculto, escondido tras la base. Sin JS se ve en reposo. */
+.js-ready .pacomoji {
+  opacity: 0;
+  transform: translateY(120%) rotate(var(--rot, 0deg));
+}
+
+/* Al entrar en viewport: aterriza (una vez) y encadena la ola infinita.
+   El escalonado por `--i` da el efecto de ola recorriendo la fila. */
+.js-ready .pacomoji.revealed {
+  animation:
+    pacomoji-land 1s linear calc(var(--i, 0) * 0.08s) both,
+    pacomoji-wave 3s ease-in-out calc(1s + var(--i, 0) * 0.18s) infinite;
+}
+
+/* Fase 1: sube al apex y cae a la base a la MISMA velocidad constante (todo lineal).
+   Para que subir y bajar vayan igual de rápido, el tiempo se reparte proporcional a la
+   distancia de cada tramo. Con --jump=-240% desde 120%: subida = 360% de recorrido,
+   bajada = 240% → total 600% → apex al 60% del tiempo (360/600).
+   OJO: si cambias --jump, recalcula ese 60% = (120 + |jump|) / (120 + 2*|jump|) * 100. */
+@keyframes pacomoji-land {
+  0% {
+    opacity: 0;
+    transform: translateY(120%) rotate(var(--rot, 0deg));
+  }
+
+  60% {
+    opacity: 1;
+    /* Altura del salto (relativa al propio pacomoji). Tunable con --jump. */
+    transform: translateY(var(--jump, -240%)) rotate(var(--rot, 0deg));
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+
+/* Fase 2: ola amplia — sube y baja en bucle. */
+@keyframes pacomoji-wave {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+
+  25% {
+    transform: translateY(-28px) rotate(var(--rot, 0deg));
+  }
+
+  75% {
+    transform: translateY(12px) rotate(var(--rot, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .js-ready .pacomoji,
+  .js-ready .pacomoji.revealed {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* ── Anatomía ── */
 .anatomia-card {
   @apply flex flex-col items-center justify-between overflow-hidden

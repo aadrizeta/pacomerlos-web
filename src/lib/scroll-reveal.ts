@@ -11,56 +11,58 @@
  *              abajo (top > 0) resetea quitando `.revealed`.
  */
 
-let oneShot: IntersectionObserver | null = null;
-let repeat: IntersectionObserver | null = null;
+/**
+ * Margen inferior negativo por defecto: encoge el viewport efectivo por abajo, de modo
+ * que el reveal salta cuando el elemento ya ha subido ~18% dentro de la pantalla (no
+ * justo al asomar por el borde inferior). Un valor POSITIVO (p. ej. `0px 0px 20% 0px`)
+ * hace lo contrario: amplía el viewport por abajo y dispara ANTES, cuando el elemento
+ * aún está por debajo del borde inferior.
+ */
+const DEFAULT_ROOT_MARGIN = '0px 0px -18% 0px';
 
 /**
- * Margen inferior negativo: encoge el viewport efectivo por abajo, de modo que el
- * reveal salta cuando el elemento ya ha subido ~18% dentro de la pantalla (no justo
- * al asomar por el borde inferior). Sube el % para dispararlo aún más arriba.
+ * Un observer por combinación de (modo × rootMargin), cacheado y reutilizado por todos
+ * los elementos que compartan esa configuración. Así seguimos con pocos observers aunque
+ * distintos efectos (reveal genérico, pacomojis…) usen rangos de disparo diferentes.
  */
-const ROOT_MARGIN = '0px 0px -18% 0px';
+const observers = new Map<string, IntersectionObserver>();
 
-function getOneShot(): IntersectionObserver {
-  if (oneShot) return oneShot;
-  oneShot = new IntersectionObserver(
+function getObserver(repeatMode: boolean, rootMargin: string): IntersectionObserver {
+  const key = `${repeatMode ? 'repeat' : 'once'}|${rootMargin}`;
+  const cached = observers.get(key);
+  if (cached) return cached;
+
+  const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
           entry.target.classList.add('revealed');
-          oneShot!.unobserve(entry.target);
-        }
-      }
-    },
-    { threshold: 0.08, rootMargin: ROOT_MARGIN },
-  );
-  return oneShot;
-}
-
-function getRepeat(): IntersectionObserver {
-  if (repeat) return repeat;
-  repeat = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-        } else if (entry.boundingClientRect.top > 0) {
+          if (!repeatMode) observer.unobserve(entry.target);
+        } else if (repeatMode && entry.boundingClientRect.top > 0) {
           // volvió por debajo del viewport → resetea para re-animar
           entry.target.classList.remove('revealed');
         }
       }
     },
-    { threshold: 0.15, rootMargin: ROOT_MARGIN },
+    { threshold: repeatMode ? 0.15 : 0.08, rootMargin },
   );
-  return repeat;
+  observers.set(key, observer);
+  return observer;
 }
 
 /**
  * Registra un elemento para el efecto de reveal.
+ * @param repeatMode  re-anima cada vez que reentra en viewport (resetea al salir por abajo).
+ * @param rootMargin  rango de disparo (CSS `rootMargin`). Por defecto dispara ~18% dentro
+ *                    de pantalla; pásale un valor positivo por abajo para dispararlo antes.
  * Devuelve una función de limpieza que deja de observarlo.
  */
-export function observeReveal(el: Element, repeatMode = false): () => void {
-  const observer = repeatMode ? getRepeat() : getOneShot();
+export function observeReveal(
+  el: Element,
+  repeatMode = false,
+  rootMargin: string = DEFAULT_ROOT_MARGIN,
+): () => void {
+  const observer = getObserver(repeatMode, rootMargin);
   observer.observe(el);
   return () => observer.unobserve(el);
 }

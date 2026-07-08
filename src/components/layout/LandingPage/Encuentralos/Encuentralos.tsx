@@ -26,7 +26,7 @@ export default function Encuentralos({ stores }: EncuentralosProps) {
             kicker="Puntos de venta"
             title={['Dónde', 'encontrarlos']}
             kickerColor="color-mix(in srgb, var(--paco-dark) 50%, transparent)"
-            titleSizeOverride="clamp(2.25rem, 9.4vw, 6rem)"
+            titleSizeOverride="clamp(2.25rem, 9.4vw, 8rem)"
           />
           <span className='md:text-xl'>Localiza el punto de venta más cercano a ti</span>
         </Reveal>

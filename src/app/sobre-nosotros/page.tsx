@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+// import Image from 'next/image';
 import NormaCounter from '@/components/ui/NormaCounter';
 import AbtUsSection from '@/components/ui/AboutUs/AbtUsSection';
 import pacoNevera from '../../../public/img/paco-nevera.png';
@@ -11,6 +11,7 @@ import pacomoji2 from '../../../public/img/pacomoji2.png';
 import pacomoji4 from '../../../public/img/pacomoji4.png';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Button from '@/components/ui/Button';
+import Pacomoji from '@/components/ui/Pacomoji';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Paco Merlos',
@@ -93,7 +94,7 @@ export default function AboutUsPage() {
         waveBottom={true}
         waveBottomFill="var(--paco-cream)"
       />
-      <section className="abt-norma">
+      <section className="py-20 lg:py30">
         <NormaCounter />
       </section>
       <AbtUsSection
@@ -133,6 +134,15 @@ export default function AboutUsPage() {
       </section>
 
       {/* ── 7. PACOMOJIS ── */}
+      {/* v2: saltan, aterrizan en fila y hacen ola (componente <Pacomoji>). */}
+      <div className="pacomoji-row" aria-hidden="true">
+        {PACOMOJIS.map((p, i) => (
+          <Pacomoji key={i} src={p.img} index={i} left={p.left} rot={p.rot} size={160} repeat />
+        ))}
+      </div>
+
+      {/* v1 (fallback): parábola en bucle indefinido. Para volver a esta versión,
+          descomenta este bloque y elimina el <div className="pacomoji-row"> de arriba.
       <div className="abt-pacomojis" aria-hidden="true">
         {PACOMOJIS.map((p, i) => (
           <div key={i} className="abt-pacomoji-wrap" style={{ '--delay': p.delay, '--arc': '90px', left: p.left } as React.CSSProperties}>
@@ -140,6 +150,7 @@ export default function AboutUsPage() {
           </div>
         ))}
       </div>
+      */}
     </>
   );
 }
