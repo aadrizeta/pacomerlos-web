@@ -6,16 +6,12 @@ export interface ImageTextProps {
   title: string;
   text1: string;
   text2?: string;
-  /** Import estático de la imagen (`import img from '...png'`). Next infiere sus
-   *  dimensiones reales → ratio + anti-CLS automáticos, sin declararlas a mano. */
   img: StaticImageData;
   imgAlt: string;
   bgColor: string;
   waveTop: boolean;
   waveBottom: boolean;
-  /** Color del trazo de la onda superior (hex o `var(--paco-*)`). */
   waveTopFill?: string;
-  /** Color del trazo de la onda inferior (hex o `var(--paco-*)`). */
   waveBottomFill?: string;
   reverse?: boolean;
 }

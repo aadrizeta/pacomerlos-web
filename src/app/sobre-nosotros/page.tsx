@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import NormaCounter from '@/components/ui/NormaCounter';
 import AbtUsSection from '@/components/ui/AboutUs/AbtUsSection';
 import pacoNevera from '../../../public/img/paco-nevera.png';
@@ -10,6 +9,8 @@ import pacomoji from '../../../public/img/pacomoji.png';
 import pacomoji1 from '../../../public/img/pacomoji1.png';
 import pacomoji2 from '../../../public/img/pacomoji2.png';
 import pacomoji4 from '../../../public/img/pacomoji4.png';
+import SectionHeader from '@/components/ui/SectionHeader';
+import Button from '@/components/ui/Button';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Paco Merlos',
@@ -108,12 +109,26 @@ export default function AboutUsPage() {
         waveBottomFill="var(--paco-purple)"
       />
       {/* ── 6. CTA ── */}
-      <section className="abt-cta abt-cta--purple">
-        <p className="abt-cta-eyebrow">Créenos o pruébalo</p>
-        <h2>UNA MORDIDA<br />LO EXPLICA TODO.</h2>
-        <div className="abt-cta-btns">
-          <Link href="/#encuentralos" className="btn btn-cream" style={{ color: 'var(--paco-purple)', textTransform: 'uppercase' }}>Dónde encontrarlos</Link>
-          <a href="https://www.instagram.com/paco_merlos/" target="_blank" rel="noopener noreferrer" className="btn btn-orange" style={{ textTransform: 'uppercase' }}>@paco_merlos</a>
+      <section className="abt-cta">
+        <SectionHeader
+          kicker="créenos o pruébalos"
+          title={['una mordida', 'lo explica todo']}
+          titleColor="var(--paco-cream)"
+          kickerColor="var(--paco-cream)"
+          barsColor="var(--paco-cream)"
+        />
+        <div className="flex gap-2 md:gap-4 mt-5 justify-center">
+          <Button
+            label="encuéntralos"
+            href="/#encuentralos"
+            bgColor="var(--paco-cream)"
+            textColor="var(--paco-purple)"
+          />
+          <Button
+            label="@paco_merlos"
+            href="https://www.instagram.com/paco_merlos/"
+            external={true}
+          />
         </div>
       </section>
 
@@ -125,7 +140,6 @@ export default function AboutUsPage() {
           </div>
         ))}
       </div>
-
     </>
   );
 }

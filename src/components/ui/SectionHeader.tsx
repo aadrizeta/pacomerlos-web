@@ -1,17 +1,14 @@
+import { Fragment } from 'react';
 import type { CSSProperties } from 'react';
 
 export interface SectionHeaderProps {
   kicker: string;
-  title: string;
-  /** Color del título (h2). Por defecto `var(--paco-orange)`. */
+  title: string | string[];
   titleColor?: string;
-  /** Color del kicker (p + opacidad). Por defecto `var(--paco-orange)`. */
   kickerColor?: string;
-  /** Color de las barras laterales. Por defecto `var(--paco-orange)`. */
   barsColor?: string;
-  /** Font-size personalizado del título (CSS: `'4rem'`, `'clamp(...)'`, …). Si se
-   *  omite, usa el tamaño por defecto responsive (`text-section-title`). */
   titleSizeOverride?: string;
+  titleMaxWidth?: string;
 }
 
 export default function SectionHeader({
@@ -21,8 +18,9 @@ export default function SectionHeader({
   kickerColor,
   barsColor,
   titleSizeOverride,
+  titleMaxWidth = '11em',
 }: SectionHeaderProps) {
-  const titleStyle: CSSProperties = {};
+  const titleStyle: CSSProperties = { maxWidth: titleMaxWidth };
   if (titleColor) titleStyle.color = titleColor;
   if (titleSizeOverride) titleStyle.fontSize = titleSizeOverride;
 
@@ -37,10 +35,17 @@ export default function SectionHeader({
         <div className="side-bars" style={barsColor ? { backgroundColor: barsColor } : undefined} />
       </div>
       <h2
-        className="px-6 text-section-title font-chunko uppercase text-center mt-3 text-paco-orange leading-none"
+        className="text-section-title font-chunko uppercase text-center text-balance mt-3 text-paco-orange leading-none"
         style={titleStyle}
       >
-        {title}
+        {Array.isArray(title)
+          ? title.map((line, i) => (
+            <Fragment key={i}>
+              {i > 0 && <br />}
+              {line}
+            </Fragment>
+          ))
+          : title}
       </h2>
     </div>
   );

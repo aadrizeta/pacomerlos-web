@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import PaquitosCarousel from '../../../ui/LangingPage/paquitosCarousel';
-import GalleryButton from '../../../ui/LangingPage/galleryButtton';
+import Button from '../../../ui/Button';
 import Reveal from '@/components/ui/Reveal';
 import SectionHeader from '@/components/ui/SectionHeader';
 import type { Paquito } from '@/types/paquitos';
@@ -22,7 +22,7 @@ export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
       >
         <SectionHeader
           kicker="Nuestros Sabores"
-          title="Conoce cada uno"
+          title={['Conoce', 'cada uno']}
         />
         <Image
           src="/icons/flecha-hacia-abajo.svg"
@@ -34,7 +34,12 @@ export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
         />
       </Reveal>
       <PaquitosCarousel paquitos={paquitos} />
-      <GalleryButton />
+      <div className="mt-5 flex justify-center">
+        <Button
+          label="ver todos"
+          href="/sabores"
+        />
+      </div>
     </section>
   );
 }
