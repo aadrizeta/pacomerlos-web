@@ -1,6 +1,8 @@
+import type { CSSProperties } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Reveal from "@/components/ui/Reveal";
 import BorderWave from "@/components/ui/BorderWave";
+import { renderBoldText } from "@/lib/richText";
 
 export interface ImageTextProps {
   title: string;
@@ -14,9 +16,11 @@ export interface ImageTextProps {
   waveTopFill?: string;
   waveBottomFill?: string;
   reverse?: boolean;
+  outline?: boolean;
+  outlineColor?: string;
 }
 
-export default function AbtUsSection({ title, text1, text2, img, imgAlt, bgColor, waveTop, waveBottom, waveTopFill, waveBottomFill, reverse }: ImageTextProps) {
+export default function AbtUsSection({ title, text1, text2, img, imgAlt, bgColor, waveTop, waveBottom, waveTopFill, waveBottomFill, reverse, outline, outlineColor }: ImageTextProps) {
   return (
     <>
       {waveTop && <BorderWave background={bgColor} fill={waveTopFill} flip />}
@@ -32,12 +36,27 @@ export default function AbtUsSection({ title, text1, text2, img, imgAlt, bgColor
               className={`abt-section-image${reverse ? ' abt-section-image--reverse' : ''}`}
             />
           </Reveal>
-          <div className="w-full lg:flex-1 lg:max-w-2xl">
-            <Reveal as="h2" delay={1} repeat className="text-title-big font-chunko uppercase text-paco-cream leading-none">{title}</Reveal>
-            <div className="abt-respaldo-divider mt-5" />
+          <div
+            className="w-full lg:flex-1 lg:max-w-2xl"
+            style={outlineColor ? ({ '--outline-color': outlineColor } as CSSProperties) : undefined}
+          >
+            <Reveal
+              as="h2"
+              delay={1}
+              repeat
+              className={`text-title-big font-chunko uppercase leading-none ${outline ? 'paco-outline' : 'text-paco-cream'}`}
+            >
+              {title}
+              <div
+                className="w-20 h-0.5 mt-4 mb-8"
+                style={{
+                  backgroundColor: outlineColor || '#FFFFF54D'
+                }}
+              />
+            </Reveal>
             <Reveal delay={3} repeat className="flex flex-col gap-5 md:gap-9">
-              <p className="font-now text-lg md:text-xl lg:text-3xl text-paco-cream">{text1}</p>
-              {text2 && <p className="font-now text-lg md:text-xl lg:text-3xl text-paco-cream">{text2}</p>}
+              <p className="font-now font-light text-lg md:text-2xl text-paco-cream">{renderBoldText(text1)}</p>
+              {text2 && <p className="font-now font-light text-lg md:text-2xl text-paco-cream">{renderBoldText(text2)}</p>}
             </Reveal>
           </div>
         </div>
