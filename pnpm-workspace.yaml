@@ -6,6 +6,17 @@
 # blockExoticSubdeps: bloquea subdependencias que no vengan del registro (git:, file:, tarball).
 minimumReleaseAge: 10080
 trustPolicy: no-downgrade
+# Excepciones auditadas a `no-downgrade`: dependencias transitivas legítimas del
+# árbol de Next.js que disparan la política por no publicar provenance de forma
+# consistente (solo firmas npm). Verificadas una a una: mismo publisher de
+# siempre, con firmas, meses/años en uso. Revisar antes de ampliar esta lista.
+#   - undici-types@6.21.0                       vía @types/node@^20   (publisher: matteo.collina, lead de undici)
+#   - eslint-import-resolver-typescript@3.10.1  vía eslint-config-next (publisher: jounqin, mantenedor real)
+#   - semver@6.3.1                              transitiva de tooling  (publisher: equipo npm CLI)
+trustPolicyExclude:
+  - undici-types
+  - eslint-import-resolver-typescript
+  - semver
 blockExoticSubdeps: true
 allowBuilds:
   sharp: true

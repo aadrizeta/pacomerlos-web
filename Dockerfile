@@ -6,9 +6,13 @@
 #  - Base Debian slim (glibc), NO alpine: el proyecto usa binarios nativos
 #    (sharp, @tailwindcss/oxide, lightningcss) que dan menos guerra con glibc
 #    que con musl.
-#  - pnpm 10 pineado vía corepack (mismo major que el lockfile 9.0 y que el
-#    entorno local), para evitar la clase de errores que tuvimos en matcha
-#    (lockfile mismatch / build scripts).
+#  - pnpm 11.5.3 pineado vía corepack, alineado con el campo `packageManager` de
+#    package.json y con el entorno local (mismo generador del lockfile), para
+#    evitar la clase de errores que tuvimos en matcha (lockfile mismatch / build
+#    scripts). El lockfile sigue en formato 9.0 (compatible también con pnpm 10).
+#  - La política de cadena de suministro (trustPolicy/trustPolicyExclude/
+#    minimumReleaseAge) vive en pnpm-workspace.yaml y la respeta el install del
+#    build; por eso se COPIA junto a package.json/lockfile antes de instalar.
 #  - NEXT_PUBLIC_* se HORNEAN en `next build` → se pasan como ARG/ENV ANTES del
 #    build. Coolify las inyecta como --build-arg desde las Build Variables del
 #    entorno (dev: development / prod: production).
@@ -17,7 +21,7 @@
 FROM node:22-bookworm-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@10.30.2 --activate
+RUN corepack enable && corepack prepare pnpm@11.5.3 --activate
 WORKDIR /app
 
 # ---- Dependencias (incluye devDependencies para el build) ----
