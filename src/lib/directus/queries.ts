@@ -9,6 +9,8 @@ import { slugify } from '@/lib/slug';
 type PaquitoRaw = Omit<Paquito, 'slug'>;
 
 const COLOR_FALLBACK = '#0F0F0F';
+// Color de contorno por defecto (paco-orange, en sync con --paco-orange de globals.css).
+const OUTLINE_FALLBACK = '#ff4e1b';
 
 const CAROUSEL_FIELDS = [
   'id', 'sort', 'is_featured',
@@ -20,6 +22,8 @@ const CAROUSEL_FIELDS = [
   // Override opcional tablet/móvil (<1024px)
   'title_color_preset_mobile', 'title_color_custom_mobile',
   'description_color_preset_mobile', 'description_color_custom_mobile',
+  // Contorno del título (booleano + color, sin override por breakpoint)
+  'title_outline', 'title_outline_color_preset', 'title_outline_color_custom',
 ].join(',');
 
 // paquitos_data no tiene campo `status` (flujo draft/published) — por eso aquí
@@ -42,6 +46,9 @@ function toCarouselSlide(raw: CarouselSlideRaw): CarouselSlide {
     title_color_custom_mobile,
     description_color_preset_mobile,
     description_color_custom_mobile,
+    title_outline,
+    title_outline_color_preset,
+    title_outline_color_custom,
     ...rest
   } = raw;
 
@@ -61,6 +68,11 @@ function toCarouselSlide(raw: CarouselSlideRaw): CarouselSlide {
       description_color_custom_mobile ??
       description_color_preset_mobile ??
       descDesktop,
+    // Contorno del título: custom > preset > paco-orange. El booleano decide si
+    // se renderiza (el color siempre queda resuelto, nunca null).
+    title_outline: Boolean(title_outline),
+    title_outline_color:
+      title_outline_color_custom ?? title_outline_color_preset ?? OUTLINE_FALLBACK,
   };
 }
 

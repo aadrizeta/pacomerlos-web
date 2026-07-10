@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import Script from "next/script";
 import Footer from "@/components/layout/Footer/Footer";
 import Header from "@/components/layout/Header/Header";
+import ScrollToTop from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
 const now = localFont({
@@ -75,6 +76,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ScrollToTop />
       </body>
     </html>
   );

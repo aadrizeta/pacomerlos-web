@@ -18,6 +18,12 @@ export interface CarouselSlideRaw {
   title_color_custom_mobile: string | null;
   description_color_preset_mobile: string | null;
   description_color_custom_mobile: string | null;
+  // Contorno del título. Si title_outline es true, el título se renderiza con
+  // relleno paco-cream y contorno del color resuelto (custom > preset > paco-orange).
+  // Un solo color de outline (sin override por breakpoint; el grosor lo gestiona el CSS).
+  title_outline: boolean;
+  title_outline_color_preset: string | null;
+  title_outline_color_custom: string | null;
 }
 
 export interface CarouselSlide {
@@ -36,4 +42,8 @@ export interface CarouselSlide {
   title_color_mobile: string;
   description_color_desktop: string;
   description_color_mobile: string;
+  // Contorno del título ya resuelto. Si title_outline es true, el render usa
+  // title_outline_color como color de contorno (nunca null: cae a paco-orange).
+  title_outline: boolean;
+  title_outline_color: string;
 }
