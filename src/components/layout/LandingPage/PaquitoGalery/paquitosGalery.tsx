@@ -23,6 +23,7 @@ export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
         <SectionHeader
           kicker="Nuestros Sabores"
           title={['Conoce', 'cada uno']}
+          barsColor='var(--paco-orange)'
         />
         <Image
           src="/icons/flecha-hacia-abajo.svg"

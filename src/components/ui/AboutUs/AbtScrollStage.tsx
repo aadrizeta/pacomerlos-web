@@ -31,10 +31,13 @@ export default function AbtScrollStage({ bgImage, bgAlt, panels }: AbtScrollStag
   const stageRef = useRef<HTMLElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
-  // El último panel (índice = panels.length) termina de desvanecerse en
-  // panels.length + HOLD_HALF + FADE; usamos ese punto como tope real del
-  // scroll para no dejar hueco muerto entre el último panel y el final del stage.
-  const rawMax = panels.length + HOLD_HALF + FADE;
+  // El último panel (índice = panels.length) no necesita desvanecerse: no hay
+  // nada después de él en el stage. Si se incluyera su FADE en el tope de
+  // scroll, quedaría un tramo de scroll "muerto" mostrando solo el fondo
+  // mientras el panel se desvanece a la nada. Por eso el tope real es solo
+  // panels.length + HOLD_HALF: el último panel se queda a opacidad 1 hasta
+  // que el stage termina de pinearse.
+  const rawMax = panels.length + HOLD_HALF;
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -109,24 +112,33 @@ export default function AbtScrollStage({ bgImage, bgAlt, panels }: AbtScrollStag
           style={{
             background:
               'linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.65) 65%, rgba(0,0,0,0.92) 100%)',
+            // Estado inicial = el que `update()` calcula en progress 0 (0.55),
+            // para no parpadear a opacidad plena antes de que corra el efecto.
+            opacity: 0.55,
           }}
         />
 
-        {/* Hero: primer slot del mismo stage, reutiliza el componente dedicado */}
+        {/* Hero: primer slot del mismo stage, reutiliza el componente dedicado.
+            Estado inicial visible (es el panel activo en progress 0). */}
         <div
           ref={(el) => { panelRefs.current[0] = el; }}
           className="absolute inset-0"
+          style={{ opacity: 1 }}
         >
           <AbtUsHero />
         </div>
 
         {/* Panels de contenido: reutiliza AbtUsSection, con fondo transparente
-            para que se vea el bg-image fijo del stage */}
+            para que se vea el bg-image fijo del stage. Estado inicial oculto
+            (opacity 0 + sin eventos): en progress 0 solo el hero está visible.
+            Sin esto, todos se pintan superpuestos hasta que corre `update()`
+            en el useEffect (FOUC). */}
         {panels.map((p, i) => (
           <div
             key={p.title}
             ref={(el) => { panelRefs.current[i + 1] = el; }}
             className="absolute inset-0 flex items-center justify-center"
+            style={{ opacity: 0, pointerEvents: 'none' }}
           >
             <AbtUsSection
               title={p.title}

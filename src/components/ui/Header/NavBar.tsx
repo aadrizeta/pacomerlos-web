@@ -7,7 +7,6 @@ const NAV_LINKS = [
   { name: 'Inicio', href: '/', external: false },
   { name: 'Sabores', href: '/sabores', external: false },
   { name: 'Sobre Nosotros', href: '/sobre-nosotros', external: false },
-  { name: 'Pacommunity', href: '/pacommunity', external: false },
   { name: 'Síguenos', href: 'https://www.instagram.com/paco_merlos/', external: true },
 ] as const;
 
@@ -26,9 +25,8 @@ export default function NavBar() {
                 target={external ? '_blank' : undefined}
                 rel={external ? 'noopener noreferrer' : undefined}
                 aria-current={active ? 'page' : undefined}
-                className={`navlink ${external ? 'navlink-external' : ''} ${
-                  active ? 'navlink-active' : ''
-                }`}
+                className={`navlink ${external ? 'navlink-external' : ''} ${active ? 'navlink-active' : ''
+                  }`}
               >
                 {name}
               </Link>

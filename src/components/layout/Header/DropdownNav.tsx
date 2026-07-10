@@ -6,11 +6,10 @@ import { useEffect } from 'react';
 import { isActiveLink } from '@/utils/nav';
 
 const NAV_LINKS = [
-  { name: 'Inicio',         href: '/',               external: false },
-  { name: 'Sabores',        href: '/sabores',        external: false },
+  { name: 'Inicio', href: '/', external: false },
+  { name: 'Sabores', href: '/sabores', external: false },
   { name: 'Sobre Nosotros', href: '/sobre-nosotros', external: false },
-  { name: 'Pacommunity',    href: '/pacommunity',    external: false },
-  { name: 'Síguenos',       href: 'https://www.instagram.com/paco_merlos/', external: true },
+  { name: 'Síguenos', href: 'https://www.instagram.com/paco_merlos/', external: true },
 ] as const;
 
 interface DropdownNavProps {
@@ -30,9 +29,8 @@ export default function DropdownNav({ isOpen, onClose }: DropdownNavProps) {
 
   return (
     <nav
-      className={`fixed inset-0 z-40 flex flex-col bg-paco-cream transition-transform duration-300 ease-in-out md:hidden ${
-        isOpen ? 'translate-y-0' : '-translate-y-full'
-      }`}
+      className={`fixed inset-0 z-40 flex flex-col bg-paco-cream transition-transform duration-300 ease-in-out md:hidden ${isOpen ? 'translate-y-0' : '-translate-y-full'
+        }`}
       aria-hidden={!isOpen}
     >
       <ul className="mt-24 flex flex-col gap-2 px-6">

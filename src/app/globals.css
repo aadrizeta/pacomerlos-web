@@ -125,7 +125,7 @@ body {
   }
 
   .navlink {
-    @apply rounded-md px-2 py-2 text-base font-medium uppercase tracking-[0.12em] text-black/55 transition hover:bg-paco-purple/10 hover:text-paco-purple;
+    @apply rounded-md px-2 py-2 text-base font-medium uppercase tracking-[0.12em] text-paco-dark/75 transition hover:bg-paco-purple/10 hover:text-paco-purple;
   }
 
   .navlink-external {

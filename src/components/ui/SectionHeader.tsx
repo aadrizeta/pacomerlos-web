@@ -16,7 +16,7 @@ export default function SectionHeader({
   title,
   titleColor,
   kickerColor,
-  barsColor,
+  barsColor = "var(--paco-orange)",
   titleSizeOverride,
   titleMaxWidth = '11em',
 }: SectionHeaderProps) {
@@ -30,12 +30,12 @@ export default function SectionHeader({
         className="w-full flex justify-center items-center gap-4 opacity-80 text-paco-orange"
         style={kickerColor ? { color: kickerColor } : undefined}
       >
-        <div className="side-bars" style={barsColor ? { backgroundColor: barsColor } : undefined} />
+        <div className="h-px w-10" style={barsColor ? { backgroundColor: barsColor } : undefined} />
         <p className="text-center text-xl uppercase tracking-widest font-now">{kicker}</p>
-        <div className="side-bars" style={barsColor ? { backgroundColor: barsColor } : undefined} />
+        <div className="h-px w-10" style={barsColor ? { backgroundColor: barsColor } : undefined} />
       </div>
       <h2
-        className="text-section-title font-chunko uppercase text-center text-balance mt-3 text-paco-orange leading-none"
+        className="text-section-title font-chunko uppercase text-center text-balance mt-5 text-paco-orange leading-none"
         style={titleStyle}
       >
         {Array.isArray(title)
