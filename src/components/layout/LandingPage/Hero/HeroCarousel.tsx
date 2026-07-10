@@ -59,7 +59,7 @@ export default function HeroCarousel({ children }: HeroCarouselProps) {
 
   return (
     <section
-      className="relative h-[90vh] w-full overflow-hidden touch-pan-y select-none"
+      className="relative h-screen w-full overflow-hidden touch-pan-y select-none"
       aria-roledescription="carrusel"
       ref={emblaRef}
     >

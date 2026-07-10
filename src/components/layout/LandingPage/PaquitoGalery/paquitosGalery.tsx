@@ -11,7 +11,7 @@ interface PaquitosGaleryProps {
 
 export default function PaquitosGalery({ paquitos }: PaquitosGaleryProps) {
   return (
-    <section className="relative z-20 flex flex-col justify-center items-center py-5 bg-background">
+    <section className="relative z-20 flex flex-col justify-center items-center pt-10 lg:pt-20 bg-background">
       <Reveal
         as="div"
         delay={1}

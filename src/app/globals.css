@@ -34,6 +34,7 @@
   --text-title-big: clamp(3rem, 7vw, 6rem);
   /* Equivalente a text-5xl (móvil, 3rem) → text-8xl (desktop, 6rem). */
   --text-section-title: clamp(3rem, 9.4vw, 6rem);
+  --height-paquito-stage: clamp(180px, 28vw, 400px);
 
 }
 
@@ -166,57 +167,19 @@ body {
   /* ============================================= */
   /* =================== GALERY ================== */
   /* ============================================= */
-  .side-bars {
-    @apply h-px w-10 bg-paco-orange
-  }
-
-  .paquito-carousel {
-    @apply relative w-full;
-  }
 
   .paquito-stage {
-    overflow: hidden;
-    width: 100%;
-    height: clamp(180px, 28vw, 400px);
-    touch-action: pan-y;
-    user-select: none;
-  }
-
-  .paquito-track {
-    display: flex;
-    height: 100%;
-    align-items: center;
+    @apply w-full h-paquito-stage touch-pan-y select-none
   }
 
   .paquito-slide {
     flex: 0 0 clamp(300px, 62vw, 920px);
-    min-width: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    @apply h-full flex items-center justify-center
   }
 
   .paquito-slide__inner {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: center center;
-    will-change: transform, filter, opacity;
-    /* Sin transición: el tween lo actualiza cada frame para seguir al dedo. */
+    @apply w-full flex items-center justify-center will-change-[transform,filter,opacity]
   }
-
-  @media (max-width: 767px) {
-    .paquito-stage {
-      height: clamp(140px, 50vw, 280px);
-    }
-
-    .paquito-slide {
-      flex-basis: 78vw;
-    }
-  }
-
   /* ============================================= */
   /* =================== FOOTER ================== */
   /* ============================================= */
@@ -881,16 +844,6 @@ body {
    Todas las clases de la página, agrupadas: base → secciones →
    pacomojis → responsive.
    ══════════════════════════════════════════════════════════════ */
-
-.abt-wave {
-  line-height: 0;
-}
-
-.abt-wave svg {
-  width: 100%;
-  display: block;
-}
-
 /* Editorial intro */
 .abt-intro {
   background:
@@ -975,10 +928,8 @@ body {
 
 /* Pacomojis — parábola estrecha */
 .abt-pacomojis {
-  background: var(--paco-purple);
-  position: relative;
-  height: 160px;
   clip-path: inset(-600px 0 0 0);
+  @apply relative h-40 bg-paco-purple
 }
 
 /* wrapper: solo mueve X en línea recta */
@@ -1072,19 +1023,12 @@ body {
   transform: translateY(120%) rotate(var(--rot, 0deg));
 }
 
-/* Al entrar en viewport: aterriza (una vez) y encadena la ola infinita.
-   El escalonado por `--i` da el efecto de ola recorriendo la fila. */
 .js-ready .pacomoji.revealed {
   animation:
     pacomoji-land 1s linear calc(var(--i, 0) * 0.08s) both,
     pacomoji-wave 3s ease-in-out calc(1s + var(--i, 0) * 0.18s) infinite;
 }
 
-/* Fase 1: sube al apex y cae a la base a la MISMA velocidad constante (todo lineal).
-   Para que subir y bajar vayan igual de rápido, el tiempo se reparte proporcional a la
-   distancia de cada tramo. Con --jump=-240% desde 120%: subida = 360% de recorrido,
-   bajada = 240% → total 600% → apex al 60% del tiempo (360/600).
-   OJO: si cambias --jump, recalcula ese 60% = (120 + |jump|) / (120 + 2*|jump|) * 100. */
 @keyframes pacomoji-land {
   0% {
     opacity: 0;
@@ -1093,7 +1037,6 @@ body {
 
   60% {
     opacity: 1;
-    /* Altura del salto (relativa al propio pacomoji). Tunable con --jump. */
     transform: translateY(var(--jump, -240%)) rotate(var(--rot, 0deg));
   }
 
@@ -1103,7 +1046,6 @@ body {
   }
 }
 
-/* Fase 2: ola amplia — sube y baja en bucle. */
 @keyframes pacomoji-wave {
   0%,
   100% {

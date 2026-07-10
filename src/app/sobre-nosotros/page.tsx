@@ -134,7 +134,7 @@ export default function AboutUsPage() {
 
       {/* ── 7. PACOMOJIS ── */}
       {/* v2: saltan, aterrizan en fila y hacen ola (componente <Pacomoji>). */}
-      {/* <div className="pacomoji-row" aria-hidden="true">
+      {/* <div className="relative h-37.5 bg-paco-purple" aria-hidden="true">
         {PACOMOJIS.map((p, i) => (
           <Pacomoji key={i} src={p.img} index={i} left={p.left} rot={p.rot} size={160} repeat />
         ))}

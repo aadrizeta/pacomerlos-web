@@ -6,8 +6,6 @@ import PaquitoHint from './paquitoHint';
 import GalleryArrow from './GalleryArrow';
 import type { Paquito } from '@/types/paquitos';
 
-// El paquete core `embla-carousel` es solo dependencia transitiva; derivamos el
-// tipo de la API del propio hook para no importarlo directamente.
 type EmblaCarouselType = NonNullable<ReturnType<typeof useEmblaCarousel>[1]>;
 
 const AUTOPLAY_MS = 8000;
@@ -22,7 +20,6 @@ export default function PaquitosCarousel({ paquitos }: PaquitosCarouselProps) {
   const count = paquitos.length;
   const loop = count > 1;
 
-  // draggable (por defecto en Embla) + loop + align: 'center'.
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop, align: 'center' });
 
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -36,12 +33,6 @@ export default function PaquitosCarousel({ paquitos }: PaquitosCarouselProps) {
       .map((n) => n.querySelector('.paquito-slide__inner') as HTMLElement);
   }, []);
 
-  // Efecto coverflow: en cada frame de scroll (arrastre, autoplay o scrollTo)
-  // calculamos la distancia de cada slide al centro y aplicamos escala + blur +
-  // opacidad + desplazamiento hacia el centro. Reproduce la visualización clásica
-  // (activa nítida y grande; laterales pequeñas, borrosas y superpuestas detrás),
-  // pero ahora sigue al dedo durante el arrastre. Escrito sobre el patrón oficial
-  // de Embla para tweens con soporte de loop.
   const tween = useCallback((api: EmblaCarouselType, eventName?: string) => {
     const engine = api.internalEngine();
     const scrollProgress = api.scrollProgress();
@@ -74,13 +65,9 @@ export default function PaquitosCarousel({ paquitos }: PaquitosCarouselProps) {
         const dist = diffToTarget * snapCount;
         const d = Math.min(Math.abs(dist), 3);
 
-        // Mapeos calibrados a la visualización previa: activa 1 / vecina 0.73 / lejana 0.45.
         const scale = d <= 1 ? 1 - 0.27 * d : clamp(0.73 - 0.28 * (d - 1), 0.3, 1);
         const opacity = d <= 1 ? 1 - 0.15 * d : clamp(0.85 * (2 - d), 0, 1);
         const blur = d <= 1 ? 6 * d : clamp(6 + 8 * (d - 1), 0, 18);
-        // Tira de las laterales hacia el centro como % del ancho de la propia slide
-        // (consistente en cualquier viewport, a diferencia de vw): ~18% deja una
-        // ligera superposición bajo la central sin amontonarlas.
         const tx = -dist * 18;
 
         node.style.transform = `translateX(${tx}%) scale(${scale})`;
@@ -173,7 +160,7 @@ export default function PaquitosCarousel({ paquitos }: PaquitosCarouselProps) {
   return (
     <div className="w-full">
       <div
-        className="paquito-carousel"
+        className="relative w-full"
         onMouseEnter={() => {
           pausedRef.current = true;
         }}
@@ -182,7 +169,7 @@ export default function PaquitosCarousel({ paquitos }: PaquitosCarouselProps) {
         }}
       >
         <div className="paquito-stage" ref={emblaRef} aria-roledescription="carrusel">
-          <div className="paquito-track">
+          <div className="flex items-center h-full">
             {paquitos.map((paquito, i) => (
               <div
                 key={paquito.id}
