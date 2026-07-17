@@ -81,7 +81,7 @@ export default function Pacommunity() {
   }, []);
 
   return (
-    <section>
+    <section className="relative overflow-hidden">
       <div className="pacomunity-intro">
         <Reveal repeat direction="up" distance="2rem" duration={1.5}>
           <SectionHeader

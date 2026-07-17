@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Statement Naranja Demo</title>
+    <style>
+      @font-face {
+        font-family: "Now";
+        src: url("fonts/Now-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "Now";
+        src: url("fonts/Now-Black.woff2") format("woff2");
+        font-weight: 900;
+        font-display: swap;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #fffff5;
+        font-family: "Now", Arial, sans-serif;
+      }
+
+      #statement-naranja {
+        background: #ff653a;
+        position: relative;
+        overflow: hidden;
+        margin-top: -2px;
+      }
+
+      .stmt-body {
+        max-width: 1400px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 5rem 3rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .stmt-kicker {
+        font-family: "Now", sans-serif;
+        font-weight: 400;
+        font-size: clamp(1.2rem, 2.4vw, 2.2rem);
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 0.6rem;
+        opacity: 0.9;
+      }
+
+      .stmt-text {
+        font-family: "Now", sans-serif;
+        font-weight: 900;
+        font-size: clamp(2.8rem, 6.5vw, 6.5rem);
+        color: #fff;
+        line-height: 0.95;
+        letter-spacing: -0.03em;
+        text-transform: uppercase;
+        text-wrap: balance;
+        margin: 0;
+      }
+
+      .stmt-wave-bot {
+        background: #ff653a;
+        line-height: 0;
+        display: block;
+        width: 100%;
+      }
+      .stmt-wave-bot svg {
+        width: 100%;
+        display: block;
+      }
+
+      @media (max-width: 767px) {
+        .stmt-body {
+          padding: 3.5rem 1.5rem;
+        }
+        .stmt-text {
+          font-size: clamp(2rem, 8vw, 3.5rem);
+        }
+      }
+
+      /* Relleno de demo debajo para ver el color de fondo tras la ola */
+      .demo-filler {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 4rem 3rem;
+        text-align: center;
+        color: #999;
+        font-family: Arial, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <section id="statement-naranja">
+      <div class="stmt-body">
+        <p class="stmt-kicker sr">Olvídate de los bollos</p>
+        <p class="stmt-text sr">Un paquito es<br />otra cosa</p>
+      </div>
+      <div class="stmt-wave-bot" aria-hidden="true">
+        <svg
+          viewBox="0 0 1440 80"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,48 C320,80 640,8 960,52 C1140,80 1320,16 1440,38 L1440,80 L0,80 Z"
+            fill="#fffff5"
+          />
+        </svg>
+      </div>
+    </section>
+
+    <div class="demo-filler">
+      <p>
+        Contenido de ejemplo debajo de la sección para mostrar el corte de la
+        ola.
+      </p>
+    </div>
+  </body>
+</html>

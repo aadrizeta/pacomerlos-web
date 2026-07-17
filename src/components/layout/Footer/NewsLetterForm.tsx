@@ -11,18 +11,21 @@ export default async function NewsLetterForm() {
   const launched = launch_status === 'launched';
 
   return (
-    <div className="bg-background padding-responsive flex flex-col gap-8 py-5 lg:flex-row lg:items-center lg:justify-between lg:py-10">
+    <div
+      id="newsletter"
+      className="bg-background padding-responsive flex scroll-mt-24 flex-col gap-8 py-5 lg:flex-row lg:items-center lg:justify-between lg:py-10"
+    >
       <div className="newsLetter-text">
-        <h3 className="text-2xl font-chunko uppercase text-paco-orange">
+        <h3 className="text-3xl md:text-5xl font-chunko uppercase text-paco-orange">
           {launched ? 'Newsletter' : 'Muy Pronto'}
         </h3>
         {launched ? (
-          <p>
+          <p className='md:text-xl'>
             Suscríbete a nuestra newsletter y no te pierdas{' '}
             <b>las novedades, los nuevos paquitos y dónde encontrarlos</b>.
           </p>
         ) : (
-          <p>
+          <p className='md:text-lg'>
             ¡Sé el primero en saber cuándo llegan los paquitos!
             <br />
             <b>

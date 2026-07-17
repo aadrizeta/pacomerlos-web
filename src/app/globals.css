@@ -1071,6 +1071,93 @@ body {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════ */
+/* LLUVIA DE PACOMOJIS — sección Cuenta atrás                       */
+/* Caen desde arriba y aterrizan rodeando el contador, con rebote   */
+/* y un balanceo suave en reposo.                                   */
+/* ═══════════════════════════════════════════════════════════════ */
+
+.pmrain-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.pmrain {
+  position: absolute;
+  /* Tamaño responsive: pequeño en móvil, crece hasta el techo `--pm-size`. */
+  width: clamp(38px, 8vw, var(--pm-size, 84px));
+  transform-origin: center;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.18));
+  will-change: transform;
+}
+
+.pmrain-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Con JS: ocultos hasta revelar. Sin JS quedan visibles en su aterrizaje. */
+.js-ready .pmrain-layer .pmrain {
+  opacity: 0;
+}
+
+.js-ready .pmrain-layer.revealed .pmrain {
+  animation:
+    pmrain-fall 1.5s cubic-bezier(0.5, 0, 0.75, 0.35) calc(var(--i, 0) * 0.16s) both,
+    pmrain-bob 3.4s ease-in-out calc(1.6s + var(--i, 0) * 0.16s) infinite;
+}
+
+@keyframes pmrain-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(var(--drop, -80vh)) rotate(var(--rot, 0deg));
+  }
+
+  8% {
+    opacity: 1;
+  }
+
+  75% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+
+  86% {
+    /* rebote al tocar el suelo */
+    transform: translateY(-12%) rotate(var(--rot, 0deg));
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+
+@keyframes pmrain-bob {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+
+  50% {
+    transform: translateY(-9px) rotate(var(--rot, 0deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .js-ready .pmrain-layer .pmrain,
+  .js-ready .pmrain-layer.revealed .pmrain {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translateY(0) rotate(var(--rot, 0deg)) !important;
+  }
+}
+
 /* ── Anatomía ── */
 .anatomia-card {
   @apply flex flex-col items-center justify-between overflow-hidden
@@ -1364,5 +1451,33 @@ body {
     padding: 2.5rem 1.25rem 3.5rem;
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
+  }
+}
+/* ═══════════════════════════════════════════════════════════════ */
+/* Pulso de atención: al llegar por ancla (CtaButton → #newsletter)  */
+/* el destino crece ligeramente y vuelve a su tamaño.                */
+/* ═══════════════════════════════════════════════════════════════ */
+.attn-pulse {
+  animation: attn-pulse 0.6s ease-in-out;
+  transform-origin: center;
+}
+
+@keyframes attn-pulse {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.03);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attn-pulse {
+    animation: none;
   }
 }

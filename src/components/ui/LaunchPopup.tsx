@@ -4,18 +4,10 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface LaunchPopupProps {
-  /** Controla la visibilidad desde el padre. Si se omite, el pop-up gestiona
-   *  su propio estado y se muestra al montar (útil hasta cablear la lógica). */
   open?: boolean;
-  /** Se llama al cerrar (botón, backdrop o Escape). */
   onClose?: () => void;
 }
 
-/**
- * Pop-up de aviso "muy pronto": informa de que el producto estará disponible
- * en breve. La lógica de cuándo/ a quién mostrarlo se cableará más adelante;
- * por ahora se muestra al montar y puede cerrarse.
- */
 export default function LaunchPopup({ open, onClose }: LaunchPopupProps) {
   // Modo no controlado: si no llega `open`, el componente lleva su propio estado.
   const isControlled = open !== undefined;
@@ -46,7 +38,7 @@ export default function LaunchPopup({ open, onClose }: LaunchPopupProps) {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="launch-popup-title"
