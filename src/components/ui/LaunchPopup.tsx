@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import CtaButton from './Button';
 import { useEffect, useState } from 'react';
 
 interface LaunchPopupProps {
@@ -74,13 +75,29 @@ export default function LaunchPopup({ open, onClose }: LaunchPopupProps) {
 
         {/* Cabecera con acento de marca */}
         <div className="flex flex-col items-center gap-4 bg-paco-orange px-8 pb-6 pt-10 text-center">
-          <Image
-            src="/img/pacomoji.png"
-            alt="Paco Merlos"
-            width={110}
-            height={110}
-            className="h-24 w-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]"
-          />
+          <div className='flex'>
+            <Image
+              src="/img/pacomoji.png"
+              alt="Paco Merlos"
+              width={110}
+              height={110}
+              className="h-24 w-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]"
+            />
+            <Image
+              src="/img/pacomoji1.png"
+              alt="Paco Merlos"
+              width={110}
+              height={110}
+              className="h-24 w-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]"
+            />
+            <Image
+              src="/img/pacomoji4.png"
+              alt="Paco Merlos"
+              width={110}
+              height={110}
+              className="h-24 w-auto drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)]"
+            />
+          </div>
           <span className="rounded-full bg-paco-cream px-4 py-1.5 font-now text-xs font-bold uppercase tracking-[0.18em] text-paco-orange">
             Muy pronto
           </span>
@@ -90,7 +107,7 @@ export default function LaunchPopup({ open, onClose }: LaunchPopupProps) {
         <div className="flex flex-col items-center gap-4 px-8 pb-9 pt-7 text-center">
           <h2
             id="launch-popup-title"
-            className="font-chunko text-3xl uppercase leading-none text-paco-dark"
+            className="font-chunko text-3xl uppercase leading-none text-paco-dark/85"
           >
             ¡Ya casi están aquí!
           </h2>
@@ -101,13 +118,14 @@ export default function LaunchPopup({ open, onClose }: LaunchPopupProps) {
             Los paquitos están a punto de llegar. Estamos ultimando los últimos
             detalles para que puedas disfrutarlos muy pronto.
           </p>
-          <button
-            type="button"
+          <CtaButton
+            label="Entendido"
             onClick={close}
-            className="button mt-2 bg-paco-purple text-paco-cream transition-colors hover:bg-paco-purple-dark"
-          >
-            Entendido
-          </button>
+            bgColor="var(--paco-purple)"
+            textColor="var(--paco-cream)"
+            hoverBgColor="var(--paco-purple-dark)"
+            className="mt-2"
+          />
         </div>
       </div>
     </div>

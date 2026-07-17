@@ -14,6 +14,7 @@ import CuentaAtras from '@/components/layout/LandingPage/CuentaAtras/CuentaAtras
 import { MOCK_STORES } from '@/lib/stores/mock';
 import AnatomiaAlt from '@/components/layout/LandingPage/Anatomia/AnatomiaAlt';
 import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
+import LaunchPopup from '@/components/ui/LaunchPopup';
 
 export const metadata: Metadata = {
   title: "Paquitos Artesanales en Madrid",
@@ -62,6 +63,7 @@ export default async function Home() {
       <Pacommunity />
       {/* Lanzado: el mapa de puntos de venta va al final. */}
       {showLocator && <Encuentralos stores={MOCK_STORES} />}
+      <LaunchPopup />
     </div>
   );
 }

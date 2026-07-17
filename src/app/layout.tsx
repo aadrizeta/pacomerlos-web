@@ -4,7 +4,6 @@ import Script from "next/script";
 import Footer from "@/components/layout/Footer/Footer";
 import Header from "@/components/layout/Header/Header";
 import ScrollToTop from "@/components/ui/ScrollToTop";
-import LaunchPopup from "@/components/ui/LaunchPopup";
 import "./globals.css";
 
 const now = localFont({
@@ -64,11 +63,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Marca que hay JS antes de pintar: habilita el estado inicial oculto
-            del scroll-reveal sin FOUC. Sin JS, el contenido se ve siempre.
-            strategy="beforeInteractive": next/script lo inyecta en el HTML del
-            servidor y se ejecuta antes de la hidratación (equivalente a un script
-            en <head> para evitar el parpadeo). */}
         <Script id="js-ready" strategy="beforeInteractive">
           {`document.documentElement.classList.add('js-ready')`}
         </Script>
@@ -78,7 +72,6 @@ export default function RootLayout({
         <main className="flex-1">{children}</main>
         <Footer />
         <ScrollToTop />
-        <LaunchPopup />
       </body>
     </html>
   );
