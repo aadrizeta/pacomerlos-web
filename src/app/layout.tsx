@@ -1,9 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Script from "next/script";
-import Footer from "@/components/layout/Footer/Footer";
-import Header from "@/components/layout/Header/Header";
-import ScrollToTop from "@/components/ui/ScrollToTop";
 import "./globals.css";
 
 const now = localFont({
@@ -56,6 +53,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // El chrome del sitio y el gate de lanzamiento viven en los layouts de los route
+  // groups `(site)` y `(legal)`, no aquí: así las páginas legales pueden quedar
+  // fuera del gate (accesibles siempre). El root solo aporta html/body/fuentes.
   return (
     <html
       lang="es"
@@ -67,12 +67,7 @@ export default function RootLayout({
           {`document.documentElement.classList.add('js-ready')`}
         </Script>
       </head>
-      <body className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <ScrollToTop />
-      </body>
+      <body className="flex min-h-screen flex-col">{children}</body>
     </html>
   );
 }

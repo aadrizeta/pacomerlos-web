@@ -221,7 +221,7 @@ body {
 
   .icon-link {
     @apply inline-block w-8 h-8 lg:w-12 lg:h-12 duration-200 ease-in-out;
-    background-color: ivory;
+    background-color: var(--icon-color, ivory);
     -webkit-mask: var(--icon) center / contain no-repeat;
     mask: var(--icon) center / contain no-repeat;
     transition: background-color 0.2s ease, transform 0.2s ease;
@@ -1155,6 +1155,18 @@ body {
     animation: none !important;
     opacity: 1 !important;
     transform: translateY(0) rotate(var(--rot, 0deg)) !important;
+  }
+}
+
+/* Holding page (coming soon): en móvil los pacomojis se agrandan un poco y bajan
+   ligeramente su posición. Desktop queda intacto (>=768px sin cambios). */
+@media (max-width: 767px) {
+  .pmrain-holding {
+    transform: translateY(5vh);
+  }
+
+  .pmrain-holding .pmrain {
+    width: clamp(48px, 12vw, var(--pm-size, 84px));
   }
 }
 

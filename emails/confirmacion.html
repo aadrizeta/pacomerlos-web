@@ -1,0 +1,336 @@
+<!doctype html>
+<!--
+  Correo de CONFIRMACIÓN / BIENVENIDA — Paco Merlos.
+  Se envía como MENSAJE TRANSACCIONAL de Listmonk (POST /api/tx) justo al darse de
+  alta desde el formulario "¡Avísame!" (single opt-in, alta inmediata).
+
+  USO:
+  - Previsualizar: abre este archivo en el navegador (doble clic).
+  - Listmonk: es el cuerpo de una PLANTILLA de tipo `tx` ("Confirmación alta Paco
+    Merlos"). El id de esa plantilla se pasa en la env LISTMONK_TX_TEMPLATE_ID y lo
+    usa src/lib/listmonk/client.ts → sendConfirmationEmail().
+
+  NOTA baja: en plantillas transaccionales (tx) Listmonk NO define la función
+  UnsubscribeURL (es exclusiva de campañas y el engine parsea las dobles llaves
+  incluso dentro de comentarios), así que la baja va por mailto. Las campañas
+  reales de marketing (lanzamiento / newsletters) sí llevan la baja nativa de un clic.
+
+  PARÁMETROS DEL ENVÍO:
+  - Asunto:     ¡Estás dentro! Te avisaremos del lanzamiento 🎉
+  - Preheader:  Ya formas parte de la lista. Te avisamos en cuanto aterricen los paquitos.
+  - Remitente:  Paco Merlos <newsletter@pacomerlos.com> (config de Listmonk)
+  - CTA:        Ver la cuenta atrás -> https://pacomerlos.com
+
+  Marca: morado #8C52FF / morado oscuro #4c249c / naranja #fa572a / crema #FFFFF5 / oscuro #0F0F0F
+-->
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Paco Merlos — ¡Estás dentro!</title>
+    <style>
+      /* Responsive (clientes que soportan <style>; el resto usa los estilos inline) */
+      @media only screen and (max-width: 600px) {
+        .em-h1 {
+          font-size: 32px !important;
+        }
+        .em-pad {
+          padding-left: 22px !important;
+          padding-right: 22px !important;
+        }
+      }
+    </style>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #fffff5">
+    <!-- Preheader oculto (texto de preview en la bandeja) -->
+    <span
+      style="
+        display: none !important;
+        visibility: hidden;
+        opacity: 0;
+        color: transparent;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+        mso-hide: all;
+      "
+    >
+      Ya formas parte de la lista. Te avisamos en cuanto aterricen los paquitos.
+    </span>
+
+    <table
+      role="presentation"
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="background-color: #fffff5; margin: 0; padding: 0"
+    >
+      <tr>
+        <td align="center" style="padding: 24px 12px">
+          <table
+            role="presentation"
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            style="
+              width: 600px;
+              max-width: 100%;
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              border: 1px solid rgba(0, 0, 0, 0.06);
+            "
+          >
+            <!-- Barra de marca (logo desde Directus: lectura pública + caché Cloudflare) -->
+            <tr>
+              <td
+                align="center"
+                style="
+                  background-color: #fffff5;
+                  padding: 18px 24px;
+                  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+                "
+              >
+                <img
+                  src="https://cms.pacomerlos.com/assets/f30168ce-75cd-4a8b-81f9-f74069284345"
+                  alt="Paco Merlos"
+                  height="40"
+                  style="
+                    display: block;
+                    height: 40px;
+                    width: auto;
+                    border: 0;
+                    outline: none;
+                    text-decoration: none;
+                    -ms-interpolation-mode: bicubic;
+                  "
+                />
+              </td>
+            </tr>
+
+            <!-- Titular -->
+            <tr>
+              <td
+                align="center"
+                class="em-pad"
+                style="padding: 40px 28px 8px 28px"
+              >
+                <h1
+                  class="em-h1"
+                  style="
+                    margin: 0;
+                    font-family: &quot;Arial Black&quot;, Impact, sans-serif;
+                    font-size: 40px;
+                    line-height: 1.05;
+                    color: #0f0f0f;
+                    text-transform: uppercase;
+                  "
+                >
+                  ¡Estás<br />dentro! 🎉
+                </h1>
+              </td>
+            </tr>
+
+            <!-- Subtítulo -->
+            <tr>
+              <td
+                align="center"
+                class="em-pad"
+                style="padding: 6px 32px 20px 32px"
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 18px;
+                    line-height: 1.5;
+                    color: #4c249c;
+                    font-weight: bold;
+                  "
+                >
+                  Serás de los primeros en probar los paquitos.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Cuerpo -->
+            <tr>
+              <td class="em-pad" style="padding: 0 36px 8px 36px">
+                <p
+                  style="
+                    margin: 0 0 16px 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: #0f0f0f;
+                  "
+                >
+                  ¡Gracias por apuntarte! Ya formas parte de la lista de Paco
+                  Merlos. Te escribiremos en cuanto nuestros paquitos —<strong
+                    >masa madre fermentada 48&nbsp;horas</strong
+                  >, hechos a mano en Madrid— estén listos.
+                </p>
+                <p
+                  style="
+                    margin: 0 0 8px 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: #0f0f0f;
+                  "
+                >
+                  Apunta la fecha: <strong>10 de septiembre</strong>. Serás de los
+                  primeros en saber dónde encontrarlos.
+                </p>
+              </td>
+            </tr>
+
+            <!-- Botón CTA -->
+            <tr>
+              <td
+                align="center"
+                class="em-pad"
+                style="padding: 24px 36px 20px 36px"
+              >
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td
+                      align="center"
+                      bgcolor="#fa572a"
+                      style="border-radius: 999px"
+                    >
+                      <a
+                        href="https://pacomerlos.com"
+                        target="_blank"
+                        style="
+                          display: inline-block;
+                          padding: 16px 36px;
+                          font-family:
+                            &quot;Arial Black&quot;, Impact, sans-serif;
+                          font-size: 16px;
+                          letter-spacing: 1px;
+                          color: #fffff5;
+                          text-decoration: none;
+                          text-transform: uppercase;
+                          border-radius: 999px;
+                        "
+                      >
+                        Ver la cuenta atrás
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Redes -->
+            <tr>
+              <td
+                align="center"
+                class="em-pad"
+                style="padding: 0 36px 28px 36px"
+              >
+                <p
+                  style="
+                    margin: 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 15px;
+                    line-height: 1.6;
+                    color: #0f0f0f;
+                  "
+                >
+                  Mientras tanto, síguenos:
+                  <a
+                    href="https://www.instagram.com/paco_merlos/"
+                    target="_blank"
+                    style="color: #8c52ff; font-weight: bold; text-decoration: none"
+                    >Instagram</a
+                  >
+                  &nbsp;·&nbsp;
+                  <a
+                    href="https://www.tiktok.com/@paco_merlos"
+                    target="_blank"
+                    style="color: #8c52ff; font-weight: bold; text-decoration: none"
+                    >TikTok</a
+                  >
+                </p>
+              </td>
+            </tr>
+
+            <!-- Despedida -->
+            <tr>
+              <td class="em-pad" style="padding: 0 36px 32px 36px">
+                <p
+                  style="
+                    margin: 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 16px;
+                    line-height: 1.6;
+                    color: #0f0f0f;
+                  "
+                >
+                  Nos vemos pronto (y con las manos en la masa),<br />
+                  <strong>El equipo de Paco Merlos</strong>
+                </p>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                class="em-pad"
+                style="
+                  background-color: #fffff5;
+                  padding: 22px 36px;
+                  border-top: 1px solid rgba(0, 0, 0, 0.08);
+                "
+              >
+                <p
+                  style="
+                    margin: 0 0 8px 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.5;
+                    color: #6b6b66;
+                  "
+                >
+                  Recibes este correo porque te suscribiste para enterarte del
+                  lanzamiento de Paco Merlos.
+                </p>
+                <p
+                  style="
+                    margin: 0 0 8px 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.5;
+                    color: #6b6b66;
+                  "
+                >
+                  Pacomerlos Repostería · Calle Montesa 35, 28006 Madrid (España)
+                  · info@pacomerlos.com
+                </p>
+                <p
+                  style="
+                    margin: 0;
+                    font-family: Arial, Helvetica, sans-serif;
+                    font-size: 12px;
+                    line-height: 1.5;
+                    color: #6b6b66;
+                  "
+                >
+                  ¿No quieres recibir más correos?
+                  <a
+                    href="mailto:newsletter@pacomerlos.com?subject=Baja%20de%20la%20newsletter"
+                    style="color: #8c52ff; text-decoration: underline"
+                    >Darte de baja</a
+                  >
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

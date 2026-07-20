@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-// import Image from 'next/image';
+import Image from 'next/image';
 import NormaCounter from '@/components/ui/AboutUs/NormaCounter';
-import AbtScrollStage from '@/components/ui/AboutUs/AbtScrollStage';
-import pacoNevera from '../../../public/img/paco-nevera.png';
-import paquitoDeMes from '../../../public/img/paquito-de-mes.png';
-import pacoDibujoAMano from '../../../public/img/paco-dibujo-a-mano.png';
-import pacomoji from '../../../public/img/pacomoji.png';
-import pacomoji1 from '../../../public/img/pacomoji1.png';
-import pacomoji2 from '../../../public/img/pacomoji2.png';
-import pacomoji4 from '../../../public/img/pacomoji4.png';
+import AbtUsSection from '@/components/ui/AboutUs/AbtUsSection';
+import pacoNevera from '../../../../public/img/paco-nevera.png';
+import paquitoDeMes from '../../../../public/img/paquito-de-mes.png';
+import pacoDibujoAMano from '../../../../public/img/paco-dibujo-a-mano.png';
+import pacomoji from '../../../../public/img/pacomoji.png';
+import pacomoji1 from '../../../../public/img/pacomoji1.png';
+import pacomoji2 from '../../../../public/img/pacomoji2.png';
+import pacomoji4 from '../../../../public/img/pacomoji4.png';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Button from '@/components/ui/Button';
-import Pacomoji from '@/components/ui/AboutUs/Pacomoji';
+// import Pacomoji from '@/components/ui/Pacomoji';
 
 export const metadata: Metadata = {
   title: 'Nosotros — Paco Merlos',
@@ -54,14 +54,60 @@ const SECTION_DATA = [
 export default function AboutUsPage() {
   return (
     <>
-      <AbtScrollStage
-        bgImage="/img/pacomerlos-about-us-banner.png"
-        bgAlt="Paco Merlos preparando paquitos"
-        panels={SECTION_DATA}
+      <section className="abt-intro">
+        <div className="flex flex-col items-center text-center gap-5">
+          <h1 className="paco-outline text-title-hero font-chunko leading-none">
+            ABOUT PACO
+          </h1>
+          <span className="abt-intro-pill">¿Quieres saber cómo los hacemos?</span>
+        </div>
+        <div className="abt-intro-scroll" aria-hidden="true">
+          <span className="font-now text-paco-cream uppercase text-base font-semibold tracking-wider">Baja y te lo contamos</span>
+          <svg className="abt-intro-scroll-arrow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4v16M5 13l7 7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </section>
+      {/* ── 2. ORIGEN ── */}
+      <AbtUsSection
+        title={SECTION_DATA[0].title}
+        text1={SECTION_DATA[0].text1}
+        text2={SECTION_DATA[0].text2}
+        img={SECTION_DATA[0].img}
+        imgAlt={SECTION_DATA[0].imgAlt}
+        bgColor="var(--paco-orange)"
+        waveTop={false}
+        waveBottom={true}
+        waveBottomFill="var(--paco-purple)"
+        reverse={true}
+      />
+      {/* ── 3. EL PRODUCTO ── */}
+      <AbtUsSection
+        title={SECTION_DATA[1].title}
+        text1={SECTION_DATA[1].text1}
+        text2={SECTION_DATA[1].text2}
+        img={SECTION_DATA[1].img}
+        imgAlt={SECTION_DATA[1].imgAlt}
+        bgColor="var(--paco-purple)"
+        waveTop={false}
+        waveBottom={true}
+        waveBottomFill="var(--paco-cream)"
       />
       <section className="py-20 lg:py30">
         <NormaCounter />
       </section>
+      <AbtUsSection
+        title={SECTION_DATA[2].title}
+        text1={SECTION_DATA[2].text1}
+        text2={SECTION_DATA[2].text2}
+        img={SECTION_DATA[2].img}
+        imgAlt={SECTION_DATA[2].imgAlt}
+        bgColor="var(--paco-orange)"
+        waveTop={true}
+        waveBottom={true}
+        waveTopFill="var(--paco-cream)"
+        waveBottomFill="var(--paco-purple)"
+      />
       {/* ── 6. CTA ── */}
       <section className="abt-cta">
         <SectionHeader
@@ -88,22 +134,22 @@ export default function AboutUsPage() {
 
       {/* ── 7. PACOMOJIS ── */}
       {/* v2: saltan, aterrizan en fila y hacen ola (componente <Pacomoji>). */}
-      <div className="pacomoji-row" aria-hidden="true">
+      {/* <div className="relative h-37.5 bg-paco-purple" aria-hidden="true">
         {PACOMOJIS.map((p, i) => (
           <Pacomoji key={i} src={p.img} index={i} left={p.left} rot={p.rot} size={160} repeat />
         ))}
-      </div>
+      </div> */}
 
       {/* v1 (fallback): parábola en bucle indefinido. Para volver a esta versión,
-                descomenta este bloque y elimina el <div className="pacomoji-row"> de arriba.
-            <div className="abt-pacomojis" aria-hidden="true">
-              {PACOMOJIS.map((p, i) => (
-                <div key={i} className="abt-pacomoji-wrap" style={{ '--delay': p.delay, '--arc': '90px', left: p.left } as React.CSSProperties}>
-                  <Image src={p.img} width={120} height={120} className="abt-pacomoji" style={{ '--rot': p.rot } as React.CSSProperties} alt="" />
-                </div>
-              ))}
-            </div>
-            */}
+          descomenta este bloque y elimina el <div className="pacomoji-row"> de arriba. */}
+      <div className="abt-pacomojis" aria-hidden="true">
+        {PACOMOJIS.map((p, i) => (
+          <div key={i} className="abt-pacomoji-wrap" style={{ '--delay': p.delay, '--arc': '90px', left: p.left } as React.CSSProperties}>
+            <Image src={p.img} width={120} height={120} className="abt-pacomoji" style={{ '--rot': p.rot } as React.CSSProperties} alt="" />
+          </div>
+        ))}
+      </div>
+
     </>
   );
 }

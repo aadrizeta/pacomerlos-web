@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { subscribeToLaunchList } from '@/lib/listmonk/client';
+import { after, NextResponse } from 'next/server';
+import { sendConfirmationEmail, subscribeToLaunchList } from '@/lib/listmonk/client';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,6 +64,23 @@ export async function POST(req: Request) {
 
   try {
     const result = await subscribeToLaunchList(email);
+
+    // Correo de confirmación/bienvenida solo para altas NUEVAS (no reenviar a
+    // quien ya estaba en la lista). Se envía con `after()`, DESPUÉS de mandar la
+    // respuesta: el envío tx de Listmonk bloquea hasta completar el SMTP (varios
+    // segundos) y no debe retrasar la respuesta al usuario (evita que el formulario
+    // se quede "congelado"). Best-effort: si falla, el alta ya se completó y solo
+    // se loguea.
+    if (!result.alreadySubscribed) {
+      after(async () => {
+        try {
+          await sendConfirmationEmail(email);
+        } catch (mailErr) {
+          console.error('[api/notify] confirmación', mailErr);
+        }
+      });
+    }
+
     return NextResponse.json({
       ok: true,
       alreadySubscribed: result.alreadySubscribed,

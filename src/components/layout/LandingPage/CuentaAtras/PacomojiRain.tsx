@@ -8,7 +8,7 @@ import pacomoji1 from '../../../../../public/img/pacomoji1.png';
 import pacomoji2 from '../../../../../public/img/pacomoji2.png';
 import pacomoji4 from '../../../../../public/img/pacomoji4.png';
 
-interface Drop {
+export interface Drop {
   img: StaticImageData;
   /** Posición horizontal dentro de la sección. */
   left: string;
@@ -24,7 +24,7 @@ interface Drop {
 
 // Dispuestos en anillo ALREDEDOR de la cuenta atrás (arriba, laterales y abajo),
 // evitando la banda central donde viven las cajas del contador.
-const DROPS: Drop[] = [
+const DEFAULT_DROPS: Drop[] = [
   { img: pacomoji, left: '3%', top: '38%', rot: '-10deg', size: 126, drop: '-85vh' }, // izq. medio
   { img: pacomoji1, left: '13%', top: '66%', rot: '8deg', size: 108, drop: '-75vh' }, // inf. izq.
   { img: pacomoji2, left: '22%', top: '12%', rot: '-6deg', size: 117, drop: '-95vh' }, // sup. izq.
@@ -33,13 +33,24 @@ const DROPS: Drop[] = [
   { img: pacomoji4, left: '82%', top: '66%', rot: '-5deg', size: 120, drop: '-88vh' }, // inf. der.
 ];
 
+// Exporta los assets para poder componer disposiciones alternativas (p. ej. la
+// holding page, que agrupa los pacomojis más cerca del contador).
+export { pacomoji, pacomoji1, pacomoji2, pacomoji4 };
+
 /**
  * Capa decorativa: pacomojis que "llueven" desde arriba y aterrizan en la parte
  * media de la sección de cuenta atrás, con un pequeño rebote y un balanceo suave
  * en reposo. Se dispara al entrar la sección en viewport (scroll-reveal) y se
  * re-anima al volver. Puramente decorativa: `aria-hidden` + `pointer-events-none`.
  */
-export default function PacomojiRain() {
+export default function PacomojiRain({
+  drops = DEFAULT_DROPS,
+  className = '',
+}: {
+  drops?: Drop[];
+  /** Clase extra en la capa, para variantes por contexto (p. ej. holding page). */
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,8 +60,12 @@ export default function PacomojiRain() {
   }, []);
 
   return (
-    <div ref={ref} className="pmrain-layer" aria-hidden="true">
-      {DROPS.map((d, i) => (
+    <div
+      ref={ref}
+      className={`pmrain-layer ${className}`.trim()}
+      aria-hidden="true"
+    >
+      {drops.map((d, i) => (
         <div
           key={i}
           className="pmrain"
