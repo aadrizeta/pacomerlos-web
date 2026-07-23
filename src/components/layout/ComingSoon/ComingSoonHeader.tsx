@@ -17,12 +17,12 @@ const SOCIALS = [
     label: 'Instagram de Paco Merlos',
     hover: '#E1306C',
   },
-  {
-    href: 'https://www.tiktok.com/@paco_merlos',
-    icon: 'icons8-tik-tok.svg',
-    label: 'TikTok de Paco Merlos',
-    hover: '#FE2C55',
-  },
+  // {
+  //   href: 'https://www.tiktok.com/@paco_merlos',
+  //   icon: 'icons8-tik-tok.svg',
+  //   label: 'TikTok de Paco Merlos',
+  //   hover: '#FE2C55',
+  // },
 ];
 
 export default function ComingSoonHeader() {
