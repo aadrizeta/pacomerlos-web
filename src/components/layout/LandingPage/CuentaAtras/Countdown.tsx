@@ -3,11 +3,18 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Fecha de lanzamiento: 10 de septiembre a las 00:00 hora de Madrid (CEST, UTC+2).
+ * Fecha de lanzamiento: 10 de septiembre a las 09:00 hora de Madrid (CEST, UTC+2),
+ * el mismo instante en que el Directus Flow programado revela la web y arranca la
+ * campaña (07:00 UTC — ver "Plan de lanzamiento" en CLAUDE.md). Debe ir en sync con
+ * el cron del flow: si se mueve una, hay que mover la otra.
+ *
  * Se fija el offset explícito para que el objetivo sea el mismo instante para
  * todos los visitantes, independientemente de su zona horaria local.
+ *
+ * Al llegar a cero el contador se queda en cero (no cambia de estado): la holding
+ * page desaparece sola cuando el ISR recoge `launch_status = launched`.
  */
-const LAUNCH_DATE = new Date('2026-09-10T00:00:00+02:00');
+const LAUNCH_DATE = new Date('2026-09-10T09:00:00+02:00');
 
 interface TimeLeft {
   days: number;

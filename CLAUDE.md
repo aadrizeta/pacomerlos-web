@@ -470,30 +470,85 @@ Comunes a ambos entornos salvo `NEXT_PUBLIC_CONTENT_ENV`:
 - **Build**: Coolify usa Nixpacks/Docker; si se opta por imagen mínima, añadir
   `output: 'standalone'` en `next.config.ts`.
 
-## Newsletter de lanzamiento (Listmonk) — IMPLEMENTADO
+## Newsletter y lanzamiento (Listmonk + Directus) — IMPLEMENTADO
 
-Captura de emails para avisar del lanzamiento global del producto. El flujo
-mínimo ya funciona: las altas llegan a Listmonk y, al poner la web en `launched`,
-un Directus Flow arranca la campaña y se envían los correos (verificado: los
-correos de prueba llegaron en el momento de cambiar el status a `launched`).
+Captura de emails para avisar del lanzamiento del producto y disparo del propio
+lanzamiento. Probado end-to-end: las altas llegan a Listmonk, se envía el correo
+de bienvenida transaccional, y el flip de `launch_status` revela la web y arranca
+la campaña.
+
+### El interruptor único: `launch_status`
+
+El lanzamiento son **dos efectos que cuelgan de un mismo interruptor**, el campo
+`launch_status` del singleton `site_settings` de Directus:
+
+1. **Revelar la web** — el gate de `src/app/(site)/layout.tsx` lee `launch_status`
+   en cada revalidación ISR (30 s). Sin redeploy, sin downtime.
+2. **Enviar el correo** — un Directus Flow arranca la campaña en Listmonk.
+
+> ⚠️ `NEXT_PUBLIC_CONTENT_ENV` **NO interviene** en el lanzamiento. Sus valores son
+> `production` / `development` y solo deciden si se ven los drafts de Directus. No
+> tocarla el día del lanzamiento: ponerla a `development` en producción expondría
+> contenido sin aprobar.
+
+### Gate de lanzamiento y route groups
+
+Mientras `launch_status = coming_soon`, **todo el sitio queda oculto** tras una
+holding page. Se implementa con dos route groups (carpetas entre paréntesis: no
+aparecen en la URL, solo sirven para dar un `layout.tsx` propio a cada grupo):
+
+```
+app/layout.tsx              root: <html>, <body>, fuentes. Sin chrome, sin gate.
+├── (site)/layout.tsx       GATE. Si no está revelado NO renderiza children
+│   ├── page.tsx                /
+│   ├── sabores/                /sabores
+│   ├── pacommunity/            /pacommunity
+│   └── sobre-nosotros/         /sobre-nosotros
+└── (legal)/layout.tsx      SIN gate: accesibles siempre
+    ├── privacidad/             /privacidad
+    ├── aviso-legal/            /aviso-legal
+    └── politica-de-cookies/    /politica-de-cookies
+```
+
+Condición del gate, un OR de dos palancas:
+
+```ts
+const revealed =
+  contentEnv() === "development" ||                        // dev: web completa siempre
+  (await getLaunchSettings()).launch_status === "launched"; // prod: manda Directus
+```
+
+- **No renderizar `children`** cuando está gateado evita que las páginas ejecuten
+  sus fetches a Directus.
+- Las **legales quedan fuera del gate a propósito**: el formulario de captación pide
+  consentimiento RGPD y enlaza a `/privacidad`. Si esa página estuviera tras el gate
+  se estarían recogiendo datos personales con el enlace de privacidad roto.
+- `getLaunchSettings()` degrada a `coming_soon` si Directus falla: un error de red
+  nunca revela la web antes de tiempo.
+- Hay un **segundo gate más fino** en `(site)/page.tsx` con la misma condición:
+  `coming_soon` → renderiza `<CuentaAtras />`; `launched` → renderiza `<Encuentralos />`.
+- El root layout está deliberadamente vacío (solo `<html>`/`<body>`/fuentes): si el
+  chrome o el gate vivieran ahí, no habría forma de exceptuar las páginas legales.
+
+> Deuda conocida: `(legal)` usa siempre `HoldingLayout` (chrome minimalista), así que
+> tras el lanzamiento las legales seguirán sin Header/Footer completos. El comentario
+> de `SiteChrome.tsx` que afirma que `(legal)` lo comparte es **falso**.
 
 ### Arquitectura del flujo
 
 ```
 Usuario → ① POST /api/notify { email, website(honeypot) }
        → Next.js Route Handler (valida email + honeypot + rate-limit por IP)
-       → Listmonk Admin API (alta en lista de lanzamiento, creds server-only)
+       → Listmonk POST /api/subscribers: alta en lista 3 (creds server-only)
+       → Listmonk POST /api/tx: correo de bienvenida (plantilla 6), best-effort
 
-Admin → ② pone launch_status = "launched" en Directus (singleton site_settings)
-      → Directus Flow (trigger update, condición launch_status == launched)
-      → PUT /api/campaigns/{id}/status {status:"running"} en Listmonk
-      → Listmonk envía la campaña a la lista
+Cron   → ② Directus Flow programado (10-sep 07:00 UTC = 09:00 Madrid)
+       → launch_status = "launched" en site_settings
+       → PUT /api/campaigns/4/status {"status":"running"} en Listmonk
+       → campaign_sent = true (guarda anti-reenvío)
+       ├→ Listmonk envía la campaña 4 a la lista 3
+       └→ Next.js revalida (≤30 s) → cae la holding page, se ve la web
 ```
-
-Estado actual del singleton (verificado vía API 2026-06-25):
-`site_settings` = `{ launch_status: "coming_soon", campaign_sent: true }`.
-⚠️ `campaign_sent` debe resetearse a `false` antes del lanzamiento real (el `true` es
-residuo del test) o el Flow no volverá a disparar.
 
 ### Funciones / archivos implementados (Next.js)
 
@@ -503,12 +558,19 @@ residuo del test) o el Flow no volverá a disparar.
   `preconfirm_subscriptions:true` (necesario para single opt-in). Trata el 409 /
   "already exists" como éxito (`alreadySubscribed:true`). Lanza si faltan las
   variables `LISTMONK_*`.
+- `src/lib/listmonk/client.ts` — `sendConfirmationEmail(email)`: correo de bienvenida
+  vía `POST /api/tx` con `template_id = LISTMONK_TX_TEMPLATE_ID` (plantilla **tx**,
+  no campaña). Best-effort: si falla no rompe el alta. Sin la env, se omite en
+  silencio. ⚠️ Las plantillas `tx` de Listmonk **no** soportan `{{ UnsubscribeURL }}`
+  (es exclusiva de campañas): en el correo de bienvenida la baja va por `mailto`.
+  ⚠️ El engine parsea las dobles llaves **incluso dentro de comentarios HTML**.
 - `src/app/api/notify/route.ts` — Route Handler `POST` (`runtime:'nodejs'`,
   `dynamic:'force-dynamic'`). Rate-limit en memoria (5 peticiones/60s por IP vía
   `x-forwarded-for`), honeypot (campo `website`: si trae valor responde `ok`
   silencioso sin dar pistas), validación de email (regex + máx 254 chars,
-  normaliza a minúsculas), delega en `subscribeToLaunchList`. Devuelve
-  `{ ok, alreadySubscribed }` o error con código adecuado.
+  normaliza a minúsculas), delega en `subscribeToLaunchList` y, solo para altas
+  NUEVAS (no `alreadySubscribed`), llama a `sendConfirmationEmail` dentro de su
+  propio try/catch. Devuelve `{ ok, alreadySubscribed }` o error con código adecuado.
 - `src/components/layout/Footer/NewsLetterForm.tsx` — **Server Component** async: lee
   `getLaunchSettings()` y renderiza el copy según `launch_status` (coming_soon ↔ launched);
   pasa `launched` a `EmailInput`.
@@ -516,12 +578,24 @@ residuo del test) o el Flow no volverá a disparar.
   oculto + checkbox de consentimiento RGPD (enlace a `/privacidad`) + estados
   `idle|loading|success|error`. Mensaje de éxito según `launched`.
 - `src/components/layout/Footer/Footer.tsx` — renderiza `<NotifyForm />`.
+- `emails/lanzamiento.html` y `emails/confirmacion.html` — HTML versionado de la
+  campaña de lanzamiento y del correo de bienvenida. **Son la fuente de verdad del
+  diseño**: si se edita en el panel de Listmonk, hay que volcar el cambio aquí (hoy
+  hay deriva; ver plan de lanzamiento).
 
 ### Variables de entorno (server-only, sin `NEXT_PUBLIC_`)
 
-`LISTMONK_API_URL`, `LISTMONK_API_USER`, `LISTMONK_API_TOKEN`, `LISTMONK_LIST_ID`.
-En prod (VPS) `LISTMONK_API_URL` puede ser interno (`http://listmonk:9000`); en
-preview, la URL pública. (`LISTMONK_CAMPAIGN_ID` lo usa el Directus Flow, no el repo.)
+| Variable | Valor en prod | Uso |
+|---|---|---|
+| `LISTMONK_API_URL` | `https://lists.pacomerlos.com` | Base de la Admin API. Puede ser interna (`http://listmonk:9000`) al estar en la misma red Docker |
+| `LISTMONK_API_USER` | `notify_api` | Usuario de API (`users.type='api'`) |
+| `LISTMONK_API_TOKEN` | *(secreto)* | Token en claro; auth `token <user>:<token>` |
+| `LISTMONK_LIST_ID` | `3` | Lista donde da de alta el formulario |
+| `LISTMONK_TX_TEMPLATE_ID` | `6` | Plantilla del correo de bienvenida |
+
+`LISTMONK_CAMPAIGN_ID` **no lo usa el repo**: el id de campaña vive en la config del
+Directus Flow. En `.env` local puede haber valores de test (lista 4) — no confundirlos
+con los de producción.
 
 ### Protección de `/api/notify` ante tráfico elevado (Cloudflare Rate Limiting)
 
@@ -584,69 +658,231 @@ done
 > un store compartido (Redis/Upstash) para el rate-limit. Defensa anti-bots
 > definitiva: **Cloudflare Turnstile** en el form (pendiente de keys).
 
-### Estado actual del flujo de lanzamiento (2026-06-25)
+### Estado del flujo de lanzamiento (verificado contra el VPS 2026-09-03)
 
-**Decisiones:**
+**Decisiones vigentes:**
 
-- **Una sola lista** en Listmonk: "Newsletter Paco Merlos" (id 3). El formulario da de
-  alta SIEMPRE en esta lista (pre y post lanzamiento). La campaña de Lanzamiento es su
-  primer envío; después, newsletters periódicas a la misma lista.
-- **Lanzamiento dirigido por `launch_status`** (única fuente de verdad): el flip
-  `coming_soon → launched` dispara el Flow (envía la campaña) **y** cambia el copy del
-  frontend (ISR). NO se usa la programación nativa de Listmonk (evita doble envío).
+- **Una sola lista** en Listmonk: "Newsletter Paco Merlos" (**id 3**, single opt-in).
+  El formulario da de alta SIEMPRE en esta lista, antes y después del lanzamiento. La
+  campaña de Lanzamiento es su primer envío; después, newsletters periódicas.
+- **`launch_status` es la única fuente de verdad**: revela la web (ISR) y dispara el
+  envío (Flow).
+- **Disparo por Directus Flow con trigger `schedule` (cron)**, NO por la programación
+  nativa de Listmonk. Un solo reloj evita el doble envío y que el correo salga
+  desincronizado de la revelación de la web.
 
-**Hecho:**
+**Estado real verificado:**
 
-- **Listmonk**: lista 3 renombrada a "Newsletter Paco Merlos". Campaña REAL = **id 2**
-  ("Lanzamiento Paco Merlos", draft, → lista 3) con el diseño HTML implantado: asunto
-  "Ya es oficial: los paquitos ya están aquí 🎉", logo desde Directus
-  (`assets/f30168ce-75cd-4a8b-81f9-f74069284345`), plantilla **passthrough** (id 5) para
-  no anidar `<html>`. La plantilla del correo está versionada en `emails/lanzamiento.html`.
-  `app.root_url` corregido a `https://lists.pacomerlos.com` (antes `localhost:9000` →
-  enlaces de baja/tracking rotos).
-- **Frontend**: render condicional por `launch_status` implementado — `src/types/launch.ts`,
-  `getLaunchSettings()` (`queries.ts`, ISR 30s, fallback seguro a `coming_soon`),
-  `NewsLetterForm.tsx` (copy condicional coming_soon ↔ launched), `EmailInput.tsx`
-  (prop `launched` + checkbox de consentimiento RGPD + enlace a `/privacidad` ya presentes).
+| Pieza | Valor |
+|---|---|
+| `site_settings` | `launch_status=coming_soon`, `campaign_sent=0` |
+| Lista real | id **3** "Newsletter Paco Merlos", 5 suscriptores `confirmed` |
+| Lista de pruebas | id **4** "TEST - Lanzamiento Paco Merlos", 0 suscriptores |
+| Campaña de lanzamiento | id **4** "Lanzamiento Paco Merlos", `draft`, `send_at` vacío, → lista 3, plantilla 5 (passthrough), `{{ UnsubscribeURL }}` presente |
+| Plantilla tx de bienvenida | id **6** "Confirmación alta Paco Merlos" |
+| SMTP | relay Brevo (`smtp-relay.brevo.com:587`, STARTTLS), From `Paco Merlos <newsletter@pacomerlos.com>` |
+| `app.root_url` | `https://lists.pacomerlos.com` |
+| Env app prod (Coolify) | `LISTMONK_LIST_ID=3`, `LISTMONK_TX_TEMPLATE_ID=6`, `NEXT_PUBLIC_CONTENT_ENV=production` |
+| Directus | v12.0.1 (soporta trigger `schedule`) |
 
-**Pendiente para dejar el lanzamiento armado:**
+> ⚠️ **Los ids cambian.** Las campañas 2 y 3 que citaban versiones anteriores de este
+> documento **fueron borradas**; la campaña real es la **4**. Ojo también con la
+> colisión de números: la **lista 4 es la de TEST**, la campaña 4 es la buena.
+> Verificar siempre contra la BD antes de tocar nada.
 
-- **Directus Flow**: debe arrancar la **campaña 2** (⚠️ NO la 3, que era el TEST ya
-  finalizado). Condición `launch_status==launched AND campaign_sent==false` →
-  `PUT /api/campaigns/2/status {status:"running"}` → poner `campaign_sent=true`.
-- **`campaign_sent` → `false`** en `site_settings` (ahora `true`, residuo del test).
-- **Coolify (app prod)**: `LISTMONK_LIST_ID=3`; en dev puede quedar la 4 (lista de test).
-- **Día del lanzamiento (18-jul)**: poner `launch_status=launched` (manual o flow programado).
-- **Email de confirmación de alta**: aún sin diseñar (ver ToDo).
+**⚠️ Zonas horarias — los tres servicios corren en husos distintos:**
+
+| Servicio | TZ |
+|---|---|
+| Host VPS | Europe/Berlin (CEST, UTC+2) |
+| Contenedor Directus | **UTC** |
+| Contenedor Listmonk | Europe/Madrid |
+
+El cron de un Directus Flow se evalúa **en UTC**. Lanzamiento acordado:
+**10-sep-2026, 09:00 hora de Madrid = 07:00 UTC**.
+
+### Comandos de verificación (VPS)
+
+Acceso: `ssh vps-ofi`.
+
+```bash
+# Estado del interruptor
+curl -s 'https://cms.pacomerlos.com/items/site_settings?fields=launch_status,campaign_sent'
+
+# Listmonk: campañas, listas y suscriptores
+ssh vps-ofi 'docker exec listmonk-listmonk_db-1 psql -U listmonk -d listmonk \
+  -c "SELECT id,name,status,send_at FROM campaigns ORDER BY id;" \
+  -c "SELECT campaign_id,list_id,list_name FROM campaign_lists;" \
+  -c "SELECT l.id,l.name,count(sl.subscriber_id) FROM lists l \
+      LEFT JOIN subscriber_lists sl ON sl.list_id=l.id GROUP BY 1,2 ORDER BY 1;"'
+
+# Directus: flows y operaciones. `trigger` y `key` son palabras reservadas en
+# MariaDB, así que hay que ir por fichero .sql (el quoting por -e se rompe).
+ssh vps-ofi 'cat > /tmp/q.sql <<"SQL"
+SELECT id,name,status,`trigger`,options FROM directus_flows\G
+SELECT id,flow,`key`,type,resolve,options FROM directus_operations\G
+SQL
+docker cp /tmp/q.sql directus-database-1:/tmp/q.sql
+docker exec directus-database-1 sh -c "mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" directus < /tmp/q.sql"'
+```
 
 ### Infra VPS (configurada aparte; no se aplica desde este repo)
 
-- Servicios `listmonk` + `listmonk_db` (Postgres) en el `docker-compose` del VPS,
-  red interna de Directus. vhost Apache `lists.pacomerlos.com` (Certbot) → proxy a
+- Servicios `listmonk` + `listmonk_db` (Postgres) en el `docker-compose` del VPS, red
+  interna de Directus. vhost Apache `lists.pacomerlos.com` (Certbot) → proxy a
   `listmonk:9000` (proteger `/admin`). Cloudflare: subdominio `lists` con bypass.
-- Remitente `From: Paco Merlos <newsletter@pacomerlos.com>`, `Reply-To: info@pacomerlos.com`.
-- Listmonk: lista "Newsletter Paco Merlos" (id 3, single opt-in), SMTP `newsletter@`,
-  campaña de lanzamiento (id 2). Entregabilidad: SPF, DKIM y DMARC para `pacomerlos.com`.
+- Remitente `From: Paco Merlos <newsletter@pacomerlos.com>`,
+  `Reply-To: info@pacomerlos.com`. Entregabilidad: SPF, DKIM y DMARC para
+  `pacomerlos.com`.
 - Directus: singleton `site_settings` con `launch_status` (enum) + `campaign_sent`
-  (bool). Lectura pública. Flow: trigger update + condición `launch_status==launched`
-  → Request a Listmonk para arrancar la campaña.
+  (bool). Lectura pública.
+- ⚠️ **Deuda de seguridad**: el usuario de API `notify_api` tiene rol **Super Admin**
+  (`users:manage`, `settings:manage`, `roles:manage`…) y su token viaja en claro en la
+  config del Directus Flow y en los `.env`. Solo necesita `campaigns:send`,
+  `campaigns:manage`, `subscribers:manage` y `tx:send`. Rotar y restringir.
 
 ## ToDo
 
-- [ ] **Probar funcionalidad del formulario con el backend**: verificar el flujo
-  completo de suscripción end-to-end — envío desde `EmailInput.tsx` → Route Handler
-  `/api/notify` → Listmonk Admin API → alta en lista. Comprobar también los casos
-  edge: email ya suscrito (respuesta `alreadySubscribed`), rate-limit (429), honeypot
-  y validación de email inválido.
-- [ ] **Email de confirmación de alta en la newsletter**: diseñar y crear la plantilla
-  (Listmonk) que se envía al darse de alta, confirmando la suscripción. Remitente
-  `newsletter@`, enlace de baja nativo de Listmonk.
+- [x] ~~**Email de confirmación de alta**~~ — hecho: plantilla tx id 6
+  (`emails/confirmacion.html`), enviada desde `sendConfirmationEmail()`.
+- [ ] **Cerrar el lanzamiento del 10-sep** — ver "Plan de lanzamiento" más abajo.
 - [ ] **Paquito destacado / edición limitada**: diferenciar visualmente un paquito nuevo o por tiempo limitado del resto del catálogo.
   - **Directus**: añadir campos a `paquitos_data`: `is_new` (bool) y/o `is_limited` (bool) + opcionalmente `badge_label` (string, ej. "Nuevo", "Edición limitada").
   - **Frontend**: variante visual en `PacoCard.tsx` (desktop) y `PacoCardMobileAlt.tsx` (mobile) — puede ser un badge/ribbon, borde especial, animación sutil, etc.
   - **Tipos**: actualizar `src/types/paquitos.ts` con los nuevos campos.
   - **Query**: actualizar `getPaquitos()` en `src/lib/directus/queries.ts` para incluir los nuevos campos en el `fields[]`.
 - [ ] **Diseñar imagen OG** (`public/img/PACOSJUNTOS.png`): imagen de 1200×630 px para la previsualización al compartir enlaces en redes sociales. Referenciada en `og:image` de `page.tsx` y `sabores/page.tsx`. Debe verse bien en proporción 1.91:1; evitar texto importante en los bordes.
+
+## Plan de lanzamiento — 10-sep-2026, 09:00 Madrid (07:00 UTC)
+
+Objetivo: que a las 09:00 hora de Madrid, **sin intervención manual**, la web se
+revele y salga la campaña 4 a la lista 3.
+
+> **Propiedad clave del diseño elegido**: al pasar el Flow de trigger `event` a
+> trigger `schedule`, cambiar `launch_status` a mano **deja de enviar correos**.
+> El envío solo lo hace el cron. Eso permite ensayar el flip de la web sin riesgo
+> de disparar la campaña — antes no era así.
+
+### Fase 0 — Higiene previa
+
+1. `git push origin main` (2 commits que están en `prod` pero no en `main`; el
+   entorno de desarrollo corre código más viejo que producción).
+2. **Resolver la deriva de `emails/lanzamiento.html`**: el HTML del repo y el body
+   de la campaña 4 difieren en dos párrafos (el repo menciona "masa madre fermentada
+   48 horas, hechos a mano en Madrid"; la campaña en vivo no). Decidir cuál es el
+   texto bueno y dejar ambos idénticos.
+3. **Alinear la cuenta atrás**: `src/components/layout/LandingPage/CuentaAtras/Countdown.tsx`
+   tiene `LAUNCH_DATE = 2026-09-10T00:00:00+02:00` (medianoche). Con lanzamiento a
+   las 09:00 el contador marcaría cero durante 9 horas sobre una página que aún dice
+   "Muy pronto". Cambiar a `T09:00:00+02:00` y actualizar el copy de `ComingSoon.tsx`
+   si se quiere indicar la hora.
+
+### Fase 1 — Reescribir el Directus Flow
+
+El flow actual (`Lanzamiento → Listmonk (TEST)`, id `99307936-…`) está **activo y
+apunta a la campaña 3, que ya no existe** → el día D fallaría en silencio: la web no
+se revelaría (trigger `event`) y no saldría ningún correo.
+
+Sustituirlo por **un único flow programado**:
+
+- **Nombre**: `Lanzamiento Paco Merlos` (quitar el "(TEST)", que confunde).
+- **Trigger**: `Schedule (CRON)`, expresión **`0 0 7 10 9 *`**
+  (seg min hora día mes dow — 6 campos). Se evalúa en **UTC** porque el contenedor
+  de Directus corre en UTC → dispara el 10-sep a las 07:00 UTC = 09:00 Madrid.
+- **Operaciones**, en este orden (la web primero, el correo después: así nadie
+  recibe un email que apunte a una holding page):
+
+  | # | key | Tipo | Config |
+  |---|---|---|---|
+  | 1 | `get_settings` | Read Data | colección `site_settings`, permisos `$full` |
+  | 2 | `gate` | Run Script | aborta si `launch_status === 'launched'` o `campaign_sent === true` |
+  | 3 | `reveal` | Update Data | `site_settings` key `1`, payload `{launch_status:"launched"}`, `emitEvents:false` |
+  | 4 | `start_campaign` | Webhook / Request URL | `PUT https://lists.pacomerlos.com/api/campaigns/4/status`, header `Authorization: token <user>:<token>`, body `{"status":"running"}` |
+  | 5 | `mark_sent` | Update Data | `site_settings` key `1`, payload `{campaign_sent:true}`, `emitEvents:false` |
+
+  El script del `gate` puede reutilizarse tal cual del flow actual (lanza una
+  excepción si no procede, lo que corta la cadena sin efectos).
+
+- ⚠️ `emitEvents:false` en las dos escrituras es obligatorio: evita bucles si en el
+  futuro alguien vuelve a añadir un flow con trigger `event` sobre `site_settings`.
+- ⚠️ El cron se repetiría **cada año** el 10-sep. El `gate` lo hace inofensivo
+  (`campaign_sent` ya será `true`), pero conviene **desactivar el flow** tras el
+  lanzamiento.
+
+### Fase 2 — Ensayo (imprescindible: el envío no se puede deshacer)
+
+Ensayar en **dos mitades independientes**, para no revelar la web de producción ni
+gastar la campaña real.
+
+**A. Mitad "correo"** — verifica cron, TZ, auth y la llamada a Listmonk:
+
+1. Duplicar la campaña 4 en Listmonk → campaña de prueba dirigida a la **lista 4
+   ("TEST", 0 suscriptores)**; añadir 1–2 emails propios a esa lista.
+2. Clonar el flow apuntando a esa campaña de prueba, **sin las operaciones 3 y 5**
+   (no tocar `site_settings`), con cron a 5 minutos vista *en UTC*.
+3. Verificar: llega el correo, la campaña queda `finished`, el log del flow no tiene
+   errores. Esto valida justo lo que falló la última vez (el id de campaña) y la
+   conversión de husos.
+4. Borrar el flow de prueba y dejar la campaña de prueba fuera de juego.
+
+**B. Mitad "web"** — verifica el gate y el ISR:
+
+1. Poner `launch_status = launched` a mano en Directus (seguro: con trigger cron ya
+   no dispara ningún envío).
+2. Comprobar en ≤30 s que `pacomerlos.com` muestra la web completa, que
+   `/sabores` y `/pacommunity` responden, y que `/privacidad` sigue accesible.
+3. Revertir a `coming_soon` y confirmar que vuelve la holding page.
+
+Hacerlo en franja de bajo tráfico.
+
+### Fase 3 — Armado (D-1, 9-sep)
+
+Checklist de estado, verificable con los comandos de "Comandos de verificación":
+
+- [ ] `launch_status = coming_soon` y `campaign_sent = false`
+- [ ] Campaña **4** en `draft`, `send_at` **vacío** (sin programación nativa: el
+      disparo es del Flow, dos relojes serían doble envío)
+- [ ] Campaña 4 → lista **3**; body idéntico a `emails/lanzamiento.html`
+- [ ] Lista 3 con los suscriptores esperados, todos `confirmed`
+- [ ] Flow `Lanzamiento Paco Merlos` **activo**, cron `0 0 7 10 9 *`, campaña **4**
+- [ ] No queda ningún otro flow activo sobre `site_settings`
+- [ ] App prod: `NEXT_PUBLIC_CONTENT_ENV=production`, `LISTMONK_LIST_ID=3`
+- [ ] `main` mergeado a `prod` y desplegado (congelar cambios)
+
+### Fase 4 — Día D (10-sep, 09:00)
+
+Estar delante entre 08:55 y 09:15.
+
+- 09:00 → el cron dispara. 09:00–09:01 → `launch_status=launched`.
+- ≤09:01 → la web debe estar revelada (ISR 30 s).
+- 09:01+ → campaña `running` → `finished`. Con 5 suscriptores y `concurrency 10`,
+  el envío es prácticamente instantáneo.
+- Verificar `campaign_sent = true`.
+
+**Plan B manual** si a las 09:03 no ha pasado nada:
+
+```bash
+# 1. Revelar la web (Directus: poner launch_status = launched en el panel)
+# 2. Arrancar la campaña a mano
+curl -X PUT https://lists.pacomerlos.com/api/campaigns/4/status \
+  -H 'Authorization: token <user>:<token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"running"}'
+# 3. Marcar campaign_sent = true en Directus
+```
+
+### Fase 5 — Post-lanzamiento
+
+- Desactivar el Flow de lanzamiento (ya cumplió; el cron se repetiría cada año).
+- **Rotar el token de `notify_api`** y crear un rol restringido
+  (`campaigns:send`, `campaigns:manage`, `subscribers:manage`, `tx:send`) en lugar
+  de Super Admin. Actualizar el token en Coolify (prod y dev), `.env` local y la
+  config del Flow.
+- Arreglar el chrome de `(legal)`: tras el lanzamiento las páginas legales deberían
+  usar `SiteChrome`, no `HoldingLayout`. Corregir también el comentario falso de
+  `SiteChrome.tsx`.
+- Retirar o reutilizar `CuentaAtras`/`Countdown` y `ComingSoon` (quedan como código
+  muerto en el camino `launched`).
 
 ## Próximos pasos
 
