@@ -81,6 +81,73 @@ Catálogo de productos. Campos:
 - general_description, interior_description, topping_description
 - primary_color, secondary_color (string, código hex — pueden ser null)
 
+### store_locations
+
+Puntos de venta del localizador "Encuéntralos". Colección **plana** (sin relaciones).
+
+| Campo | Tipo en el JSON | Notas |
+|---|---|---|
+| `id` | `number` | |
+| `status` | `string` | `published` \| `draft` — mismo flujo de aprobación que `carousel_slides` |
+| `city` | `string` | slug en minúsculas: `madrid`, `barcelona`, `sevilla` |
+| `store_name` | `string` | Nombre del punto de venta |
+| `store_adress` | `string` | ⚠️ el campo se llama **`store_adress`**, con una sola `d`. No es `address` |
+| `latitude` | **`string`** | ⚠️ llega como **texto**, no como número |
+| `longitude` | **`string`** | ⚠️ idem |
+| `maps_url` | `string` | Enlace corto de Google Maps |
+
+Respuesta de ejemplo (`GET /items/store_locations`):
+
+```json
+{
+  "id": 7,
+  "status": "published",
+  "city": "madrid",
+  "store_name": "La Fresería Chueca",
+  "store_adress": "C. de Augusto Figueroa, 27, Centro, 28004 Madrid",
+  "latitude": "40.4225476",
+  "longitude": "-3.6985597",
+  "maps_url": "https://maps.app.goo.gl/CfsWQLAS6k8ELoou9"
+}
+```
+
+#### Detalles que muerden
+
+- **`latitude`/`longitude` son strings.** Hay que convertirlos con `Number()` antes de
+  usarlos en el mapa o en `distanceKm()`. Pasar el string directamente a Leaflet o a
+  la fórmula de Haversine da `NaN` sin error visible.
+- **No tiene campo `target`** (a diferencia de `carousel_slides` y `paquitos_data`), así
+  que aquí NO aplica `targetFilter()`. El único control de visibilidad es `status`.
+- ⚠️ **La lectura pública devuelve también los `draft`** (verificado 2026-09-03: sin
+  filtro, `/items/store_locations` expone los 13 registros, incluidos los no aprobados).
+  El filtrado es responsabilidad del frontend: aplicar `statusFilter()`, que en
+  producción resuelve a `filter[status][_eq]=published`. Sin él se publicarían puntos
+  de venta que aún no existen.
+- Estado a 2026-09-03: **13 registros** — `madrid` 6 (`published`), `barcelona` 4
+  (`draft`), `sevilla` 3 (`draft`).
+
+#### Migración pendiente del localizador
+
+El componente `StoreLocator.tsx` se maquetó contra datos provisionales de
+supermercados (`MOCK_STORES`), con una forma **distinta** a la de esta colección:
+
+| `Store` (tipo actual, `src/types/stores.ts`) | `store_locations` (Directus) |
+|---|---|
+| `name` | `store_name` |
+| `address` | `store_adress` |
+| `lat` / `lng` (`number`) | `latitude` / `longitude` (`string`) |
+| `chain: ChainId` (mercadona, carrefour…) | — no existe |
+| — | `city` (madrid, barcelona, sevilla) |
+| — | `maps_url` |
+
+Migrar implica más que cambiar el origen de datos: el **filtro por cadena de
+supermercado** (`CHAINS`, los chips de colores) no tiene equivalente en la colección
+real, y su sustituto natural es un **filtro por ciudad**. Mientras eso no se decida,
+`src/lib/stores/mock.ts` sigue siendo el origen de `(site)/page.tsx`.
+
+Lo que sí es reutilizable tal cual: `src/lib/stores/geo.ts` (Haversine + formateo de
+distancia) es agnóstico al origen y no necesita cambios.
+
 ## Flujo de aprobación de contenido (draft → published)
 
 1. Equipo crea/edita slide → status = draft
