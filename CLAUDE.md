@@ -763,7 +763,7 @@ revele y salga la campaña 4 a la lista 3.
 > El envío solo lo hace el cron. Eso permite ensayar el flip de la web sin riesgo
 > de disparar la campaña — antes no era así.
 
-### Fase 0 — Higiene previa
+### Fase 0 — Higiene previa ✅ HECHO (2026-09-03)
 
 1. `git push origin main` (2 commits que están en `prod` pero no en `main`; el
    entorno de desarrollo corre código más viejo que producción).
@@ -777,44 +777,98 @@ revele y salga la campaña 4 a la lista 3.
    "Muy pronto". Cambiar a `T09:00:00+02:00` y actualizar el copy de `ComingSoon.tsx`
    si se quiere indicar la hora.
 
-### Fase 1 — Reescribir el Directus Flow
+### Fase 1 — Reescribir el Directus Flow ✅ HECHO (2026-09-03)
 
-El flow actual (`Lanzamiento → Listmonk (TEST)`, id `99307936-…`) está **activo y
-apunta a la campaña 3, que ya no existe** → el día D fallaría en silencio: la web no
-se revelaría (trigger `event`) y no saldría ningún correo.
+El flow anterior (trigger `event`, id `99307936-…`) apuntaba a la **campaña 3, que ya
+no existe**: el día D no habría enviado nada. Queda **`inactive`** y renombrado a
+`Lanzamiento → Listmonk (OBSOLETO)`, como referencia de rollback.
 
-Sustituirlo por **un único flow programado**:
+Flow vigente: **`Lanzamiento Paco Merlos`**, id `80088468-97b6-4468-ad16-0c493cfa7ccb`,
+`status: active`, `trigger: schedule`, `accountability: all`,
+`options: {"cron":"0 0 7 10 9 *"}`.
 
-- **Nombre**: `Lanzamiento Paco Merlos` (quitar el "(TEST)", que confunde).
-- **Trigger**: `Schedule (CRON)`, expresión **`0 0 7 10 9 *`**
-  (seg min hora día mes dow — 6 campos). Se evalúa en **UTC** porque el contenedor
-  de Directus corre en UTC → dispara el 10-sep a las 07:00 UTC = 09:00 Madrid.
-- **Operaciones**, en este orden (la web primero, el correo después: así nadie
-  recibe un email que apunte a una holding page):
+Cron de **6 campos** (`seg min hora día mes dow`), **confirmado empíricamente** con un
+flow sonda (`*/10 * * * * *` + Log to Console → salía cada 10 s en
+`docker logs directus-directus-1`). Se evalúa en **UTC** → dispara el 10-sep a las
+07:00 UTC = 09:00 Madrid.
 
-  | # | key | Tipo | Config |
-  |---|---|---|---|
-  | 1 | `get_settings` | Read Data | colección `site_settings`, permisos `$full` |
-  | 2 | `gate` | Run Script | aborta si `launch_status === 'launched'` o `campaign_sent === true` |
-  | 3 | `reveal` | Update Data | `site_settings` key `1`, payload `{launch_status:"launched"}`, `emitEvents:false` |
-  | 4 | `start_campaign` | Webhook / Request URL | `PUT https://lists.pacomerlos.com/api/campaigns/4/status`, header `Authorization: token <user>:<token>`, body `{"status":"running"}` |
-  | 5 | `mark_sent` | Update Data | `site_settings` key `1`, payload `{campaign_sent:true}`, `emitEvents:false` |
+Operaciones, en cadena por la salida de éxito (la web se revela **antes** de enviar,
+para que nadie reciba un correo que apunte a la holding page):
 
-  El script del `gate` puede reutilizarse tal cual del flow actual (lanza una
-  excepción si no procede, lo que corta la cadena sin efectos).
+| # | key | Tipo (UI / interno) | Config |
+|---|---|---|---|
+| 1 | `get_settings` | Read Data / `item-read` | `{"collection":"site_settings","permissions":"$full","emitEvents":false}` |
+| 2 | `gate` | Run Script / `exec` | aborta si `launch_status === 'launched'` **o** `campaign_sent === true` |
+| 3 | `reveal` | Update Data / `item-update` | `{"collection":"site_settings","key":["1"],"payload":{"launch_status":"launched"},"permissions":"$full","emitEvents":false}` |
+| 4 | `start_campaign` | Webhook / `request` | `{"method":"PUT","url":"https://lists.pacomerlos.com/api/campaigns/4/status","headers":[{"header":"Authorization","value":"token notify_api:<TOKEN>"},{"header":"Content-Type","value":"application/json"}],"body":"{\"status\":\"running\"}"}` |
+| 5 | `mark_sent` | Update Data / `item-update` | `{"collection":"site_settings","key":["1"],"payload":{"campaign_sent":true},"permissions":"$full","emitEvents":false}` |
 
-- ⚠️ `emitEvents:false` en las dos escrituras es obligatorio: evita bucles si en el
-  futuro alguien vuelve a añadir un flow con trigger `event` sobre `site_settings`.
-- ⚠️ El cron se repetiría **cada año** el 10-sep. El `gate` lo hace inofensivo
-  (`campaign_sent` ya será `true`), pero conviene **desactivar el flow** tras el
-  lanzamiento.
+Script del `gate` (invertido respecto al flow viejo: ahora es el propio flow quien
+**pone** `launched`, así que aborta si YA lo está o si ya se envió):
+
+```js
+module.exports = async function (data) {
+  const arr = data.get_settings;
+  const s = Array.isArray(arr) ? arr[0] : arr;
+  if (!s) throw new Error('Abortado: no se pudo leer site_settings');
+  if (s.launch_status === 'launched') throw new Error('Abortado: ya estaba launched');
+  if (s.campaign_sent === true) throw new Error('Abortado: la campana ya se envio');
+  return { ok: true };
+};
+```
+
+#### Trampas encontradas al montarlo (las cuatro rompían el lanzamiento en silencio)
+
+1. **Cabecera de auth mal formada.** La UI invita a poner `token notify_api` como
+   *nombre* de cabecera. Es incorrecto: el nombre es **`Authorization`** y el valor es
+   **`token notify_api:<TOKEN>`** entero (17 + 32 = **49 caracteres**). Mal puesta,
+   Listmonk responde 401, la cadena se corta y **la web se revela sin enviar correo**.
+2. **Tabulador invisible en el cron.** Al pegar la expresión se coló un `\t` inicial
+   (`{"cron":"\t0 0 7 10 9 *"}`). Escribir el campo a mano, sin pegar.
+3. **`permissions` inconsistente.** `mark_sent` se guardó con `$trigger`; con trigger
+   `schedule` no hay usuario detrás, así que la escritura puede denegarse y dejar
+   `campaign_sent` en `false`. Las cuatro operaciones deben ir con **`$full`**.
+4. **Desactivar de verdad el flow viejo.** Renombrarlo no basta: si sigue `active`,
+   cualquier cambio manual de `launch_status` lo dispara.
+
+⚠️ `emitEvents:false` en las dos escrituras es obligatorio: evita bucles si alguien
+vuelve a añadir un flow con trigger `event` sobre `site_settings`.
+
+⚠️ El cron se repetiría **cada año** el 10-sep. El `gate` lo hace inofensivo
+(`campaign_sent` ya será `true`), pero conviene **desactivar el flow** tras el
+lanzamiento.
+
+#### Verificación de la credencial tal como quedó guardada
+
+Comprueba el token **que hay dentro del flow** (no el del `.env`), sin efectos
+secundarios — un `GET` a la campaña con esa misma cabecera:
+
+```bash
+ssh vps-ofi 'cat > /tmp/q.sql <<"SQL"
+SELECT JSON_VALUE(options,"$.url"), JSON_VALUE(options,"$.method"),
+       JSON_VALUE(options,"$.headers[0].header"), JSON_VALUE(options,"$.headers[0].value")
+FROM directus_operations WHERE `key`="start_campaign";
+SQL
+docker cp /tmp/q.sql directus-database-1:/tmp/q.sql >/dev/null
+OUT=$(docker exec directus-database-1 sh -c "mysql -N -B --raw -uroot -p\"\$MYSQL_ROOT_PASSWORD\" directus < /tmp/q.sql")
+URL=$(printf "%s" "$OUT" | cut -f1); AUTH=$(printf "%s" "$OUT" | cut -f4)
+curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: $AUTH" "${URL%/status}"'
+# → 200 = credencial válida. 401/403 = token mal copiado.
+```
+
+> ⚠️ Usar `--raw` en `mysql -N -B`: sin él, el modo batch escapa las comillas del
+> `body` y el JSON deja de parsear.
 
 ### Fase 2 — Ensayo (imprescindible: el envío no se puede deshacer)
 
 Ensayar en **dos mitades independientes**, para no revelar la web de producción ni
 gastar la campaña real.
 
-**A. Mitad "correo"** — verifica cron, TZ, auth y la llamada a Listmonk:
+> El **paso 4 del plan original (sonda de cron)** ya se ejecutó al montar la Fase 1:
+> `*/10 * * * * *` disparó cada 10 s, luego el cron de 6 campos está confirmado y el
+> flow sonda fue borrado. Queda por ensayar el envío real y el gate de la web.
+
+**A. Mitad "correo"** — verifica auth y la llamada a Listmonk de punta a punta:
 
 1. Duplicar la campaña 4 en Listmonk → campaña de prueba dirigida a la **lista 4
    ("TEST", 0 suscriptores)**; añadir 1–2 emails propios a esa lista.
