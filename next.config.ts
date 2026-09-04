@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Límite de workers en `next build`. Por defecto Next usa (nº de cores − 1)
   // procesos en paralelo para "Generating static pages". En el VPS de Coolify eso
-  // dispara varios workers que cargan cada uno el bundle (sharp, leaflet, etc.) y
+  // dispara varios workers que cargan cada uno el bundle (sharp, etc.) y
   // satura la RAM disponible → el kernel mata un worker y el build sale con
   // exit 255 ("Deployment failed" justo al empezar la generación estática, en 0/11).
   // Capar a 2 reduce el pico de memoria del build sin penalizar apenas (solo hay

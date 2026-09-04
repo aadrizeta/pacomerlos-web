@@ -1,6 +1,7 @@
 import type { CarouselSlide, CarouselSlideRaw } from '@/types/carousel';
 import type { Paquito } from '@/types/paquitos';
 import type { LaunchSettings } from '@/types/launch';
+import type { Store, StoreLocationRaw } from '@/types/stores';
 import { directusFetch } from './client';
 import { statusFilter, targetFilter } from './status';
 import { slugify } from '@/lib/slug';
@@ -29,6 +30,15 @@ const CAROUSEL_FIELDS = [
 // paquitos_data no tiene campo `status` (flujo draft/published) — por eso aquí
 // no se aplica statusFilter. Sí tiene `target` (enum dev|prod|both), así que se
 // aplica targetFilter() para mostrar solo lo destinado al entorno actual.
+// store_locations es una colección plana y NO tiene campo `target`, así que aquí
+// no se aplica targetFilter(). Sí tiene `status`: ⚠️ la lectura pública devuelve
+// también los `draft`, de modo que statusFilter() es el único control de
+// visibilidad — sin él se publicarían puntos de venta que aún no existen.
+const STORE_FIELDS = [
+  'id', 'city', 'store_name', 'store_adress',
+  'latitude', 'longitude', 'maps_url',
+].join(',');
+
 const PAQUITO_FIELDS = [
   'id', 'name', 'tagline', 'image_main',
   'general_description', 'interior_description', 'topping_description',
@@ -97,6 +107,51 @@ export async function getPaquitos(): Promise<Paquito[]> {
     return data.map((p) => ({ ...p, slug: slugify(p.name) }));
   } catch (err) {
     console.error('[getPaquitos]', err);
+    return [];
+  }
+}
+
+/**
+ * Normaliza un registro crudo de `store_locations`.
+ *
+ * ⚠️ `latitude`/`longitude` llegan como **string**: pasarlos tal cual a un mapa o
+ * a `distanceKm()` da `NaN` en silencio. Se convierten aquí, y `getStoreLocations`
+ * descarta los registros cuyas coordenadas no sean números finitos.
+ */
+function toStore(raw: StoreLocationRaw): Store {
+  const lat = Number(raw.latitude);
+  const lng = Number(raw.longitude);
+  return {
+    id: raw.id,
+    name: raw.store_name,
+    address: raw.store_adress,
+    city: (raw.city ?? '').trim().toLowerCase(),
+    lat,
+    lng,
+    // Si el registro no trae un enlace http(s) de Google Maps, se construye uno
+    // con las coordenadas (mismo destino, sin depender de la Directions API).
+    // El chequeo de protocolo evita inyectar un `javascript:` desde el CMS en el
+    // href del botón "Cómo llegar".
+    mapsUrl: /^https?:\/\//i.test(raw.maps_url?.trim() ?? '')
+      ? raw.maps_url!.trim()
+      : `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+  };
+}
+
+/**
+ * Puntos de venta del localizador "Encuéntralos" (`store_locations`).
+ * Ordena por ciudad y nombre, y degrada a [] si Directus falla.
+ */
+export async function getStoreLocations(): Promise<Store[]> {
+  try {
+    const { data } = await directusFetch<StoreLocationRaw[]>('/items/store_locations', {
+      params: { ...statusFilter(), fields: STORE_FIELDS, sort: 'city,store_name' },
+    });
+    return data
+      .map(toStore)
+      .filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lng));
+  } catch (err) {
+    console.error('[getStoreLocations]', err);
     return [];
   }
 }

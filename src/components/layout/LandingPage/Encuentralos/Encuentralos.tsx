@@ -13,7 +13,7 @@ export default function Encuentralos({ stores }: EncuentralosProps) {
       id="encuentralos"
       className="relative z-20 overflow-hidden bg-paco-cream px-4 py-20 md:px-8"
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-7xl">
         <Reveal
           as="div"
           delay={1}

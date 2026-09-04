@@ -792,8 +792,85 @@ body {
 
 /* ════════════════════════════════════
    LOCALIZADOR "ENCUÉNTRALOS"
-   Marcador de la ubicación del usuario (HTML generado por Leaflet vía divIcon).
+   Marcadores y fichas del mapa de Google. `AdvancedMarkerElement` y el
+   `InfoWindow` aceptan un nodo del DOM como contenido, así que su apariencia se
+   define aquí (StoreMap.tsx solo crea los elementos y les pone estas clases).
 ════════════════════════════════════ */
+
+/* Pin del punto de venta: gota con punta abajo, anclada en la coordenada. */
+.enc-pin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg) translate(0, -4px);
+  background: var(--paco-orange);
+  border: 3px solid var(--paco-cream);
+  box-shadow: 0 2px 8px rgba(15, 15, 15, 0.45);
+  transition: width 0.15s ease, height 0.15s ease, background 0.15s ease;
+  cursor: pointer;
+}
+
+.enc-pin--active {
+  width: 30px;
+  height: 30px;
+  background: var(--paco-dark);
+  border-color: var(--paco-orange);
+  box-shadow: 0 4px 14px rgba(15, 15, 15, 0.55);
+  z-index: 2;
+}
+
+/* Ficha que se abre al pulsar un marcador. */
+.enc-info {
+  min-width: 190px;
+  max-width: 240px;
+  font-family: inherit;
+  color: var(--paco-dark);
+}
+
+.enc-info__name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.enc-info__address {
+  margin: 0.25rem 0 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--paco-dark) 60%, transparent);
+}
+
+.enc-info__cta {
+  display: block;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: var(--paco-orange);
+  color: var(--paco-cream);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.enc-info__cta:hover {
+  background: var(--paco-orange-dark);
+}
+
+/* El InfoWindow trae padding y una fuente propios; se recortan para que la ficha
+   mande. Las clases `.gm-*` las genera Google, no este proyecto. */
+.gm-style .gm-style-iw-c {
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+/* Marcador de la ubicación del usuario (pin con pulso). */
 .enc-user-pin {
   position: relative;
   width: 40px;

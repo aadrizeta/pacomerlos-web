@@ -123,15 +123,40 @@ Respuesta de ejemplo (`GET /items/store_locations`):
   El filtrado es responsabilidad del frontend: aplicar `statusFilter()`, que en
   producción resuelve a `filter[status][_eq]=published`. Sin él se publicarían puntos
   de venta que aún no existen.
-- Estado a 2026-09-03: **13 registros** — `madrid` 6 (`published`), `barcelona` 4
-  (`draft`), `sevilla` 3 (`draft`).
+- Estado a 2026-09-04: **15 registros**. `published` (13): `madrid` 6, `barcelona` 4,
+  `sevilla` 3 — Barcelona y Sevilla se aprobaron el 04-sep. `draft` (2): `malaga` 1
+  (id 23), `valencia` 1 (id 24).
+- ⚠️ **Los dos `draft` traen coordenadas de Madrid** (id 23 → `40.42, -3.69`; id 24 →
+  `40.4168, -3.7038`, que es la Puerta del Sol). Son valores de relleno: al aprobarlos
+  aparecerían sobre Madrid. Las coordenadas reales se pueden sacar del propio `maps_url`
+  de cada ficha (los parámetros `!3d<lat>!4d<lng>` de la URL larga a la que redirige).
 
-#### Consumo desde el frontend
+#### Consumo desde el frontend — CONECTADO
 
-Aún **no hay** `getStoreLocations()`: la sección "Encuéntralos" sigue alimentándose de
-`src/lib/stores/mock.ts` (supermercados falsos, forma distinta a esta colección). La
-migración va ligada a rehacer el mapa — ver
-**"Mapa de puntos de venta (Google Maps)"** más abajo.
+`getStoreLocations()` (`src/lib/directus/queries.ts`) es la fuente de datos de
+"Encuéntralos". `src/lib/stores/mock.ts` fue **borrado**.
+
+- Aplica `statusFilter()` (en prod → solo `published`; en dev → `draft,published`) y
+  `sort=city,store_name`. **Sin `targetFilter()`**: la colección no tiene `target`.
+- `toStore()` normaliza la forma cruda (`StoreLocationRaw`) al tipo `Store` del
+  frontend: `store_name → name`, `store_adress → address`, `latitude`/`longitude`
+  **de string a número** con `Number()`, y `city` a minúsculas.
+- Descarta los registros cuyas coordenadas no sean finitas (`Number.isFinite`), para
+  que un dato mal metido en el CMS no meta un `NaN` en el mapa.
+- `mapsUrl` nunca es null: usa `maps_url` si es un enlace `http(s)`; si no, construye
+  `https://www.google.com/maps/dir/?api=1&destination=<lat>,<lng>`. El chequeo de
+  protocolo evita inyectar un `javascript:` desde el CMS en el href de "Cómo llegar".
+- Degrada a `[]` si Directus falla, y `(site)/page.tsx` solo renderiza
+  `<Encuentralos>` si `stores.length > 0` (nunca un mapa vacío).
+
+El componente `StoreLocator.tsx` ya consume esta forma: filtro **por ciudad** (chips
+derivados de las ciudades presentes en los datos — hoy solo Madrid, porque Barcelona y
+Sevilla siguen en `draft`), un único color de marcador (`--paco-orange`: todos los
+puntos son del mismo distribuidor) y botón "Cómo llegar" con `mapsUrl` en cada ítem de
+la lista y en el popup.
+
+> El render corre sobre **Google Maps** (`StoreMap.tsx`) — ver **"Mapa de puntos de
+> venta (Google Maps)"**.
 
 ## Flujo de aprobación de contenido (draft → published)
 
@@ -793,11 +818,42 @@ docker exec directus-database-1 sh -c "mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" 
   config del Directus Flow y en los `.env`. Solo necesita `campaigns:send`,
   `campaigns:manage`, `subscribers:manage` y `tx:send`. Rotar y restringir.
 
-## Mapa de puntos de venta (Google Maps) — OBJETIVO, no implementado
+## Mapa de puntos de venta (Google Maps) — IMPLEMENTADO (2026-09-04)
 
-Rehacer por completo la sección "Encuéntralos": mapa interactivo con los puntos de
-venta del producto (comercializado a través de **La Fresería**), con filtro por ciudad
-y un botón "Cómo llegar" por ubicación. **Se abandona Leaflet.**
+Sección "Encuéntralos": mapa interactivo con los puntos de venta del producto
+(comercializado a través de **La Fresería**), filtro por ciudad y botón "Cómo llegar"
+por ubicación. **Leaflet ha sido retirado del proyecto** (deps, tipos y CSS incluidos).
+
+### Piezas
+
+| Archivo | Rol |
+|---|---|
+| `src/lib/maps/google-maps.ts` | `loadGoogleMaps()`: inyecta el `<script>` de la Maps JS API **una sola vez** (promesa cacheada — en StrictMode los efectos se montan dos veces y si no se cargaría dos veces, con aviso de Google y doble carga contra la cuota). `googleMapId()` resuelve el Map ID. |
+| `Encuentralos/StoreMap.tsx` | Client Component que posee el mapa: crea `google.maps.Map`, los `AdvancedMarkerElement` y **un único** `InfoWindow` reutilizado. Controlado por props (`stores`, `activeId`, `onSelect`, `userPos`); no tiene estado de negocio. |
+| `Encuentralos/StoreLocator.tsx` | Contenedor: geolocalización, lista lateral y selección. Pasa a `StoreMap` los puntos a pintar. |
+| `globals.css` (bloque LOCALIZADOR) | `.enc-pin` / `.enc-pin--active`, `.enc-info*` y el retoque de `.gm-style-iw-*`. `AdvancedMarkerElement` e `InfoWindow` aceptan un **nodo del DOM**, así que su apariencia se define en CSS y el componente solo crea los elementos. |
+
+### Decisiones de implementación
+
+- **Contenido por DOM, no por HTML.** La ficha del InfoWindow se construye con
+  `document.createElement` + `textContent`. Los textos vienen del CMS: así no hay que
+  escaparlos a mano (el `escapeHtml()` que exigían los popups de Leaflet desaparece).
+- **`gestureHandling: 'cooperative'`** de serie: en táctil exige dos dedos para mover el
+  mapa y en escritorio ctrl + rueda para el zoom. Es el equivalente nativo del plugin
+  `leaflet-gesture-handling`, que ya no hace falta.
+- **Encuadre con tope de zoom.** `fitBounds` es asíncrono: el zoom definitivo no está
+  disponible hasta el siguiente evento `idle`, así que el tope (`MAX_FIT_ZOOM = 15`, para
+  que un solo punto no deje el mapa pegado al suelo) se aplica en un
+  `addListenerOnce(map, 'idle', …)`.
+- **La selección no se autoasigna.** La ficha solo se abre al pulsar un marcador o un
+  ítem de la lista. (Con Leaflet se autoseleccionaba el primero, y el `panTo` posterior
+  deshacía el encuadre recién hecho.)
+- **"Usar mi ubicación" no encuadra todos los puntos**, solo la ubicación + los **3 más
+  cercanos**: si el usuario está lejos, meterlos todos alejaría el mapa hasta dejarlo
+  inútil. Por eso `src/lib/stores/geo.ts` (Haversine) sigue en uso.
+- **Fallo de carga controlado**: si la API no carga (red, key mal restringida), `StoreMap`
+  pinta un aviso y la lista lateral sigue funcionando con sus enlaces "Cómo llegar".
+  El localizador nunca deja la sección en blanco.
 
 Los datos viven en `store_locations` (Directus) y siguen el mismo principio
 arquitectónico que `carousel_slides` y `paquitos_data`: el backend expone **solo datos
@@ -813,7 +869,11 @@ agrupación y estilo del mapa.
   (`transit`) visibles.
 - Marcadores propios con **`AdvancedMarkerElement`** (icono/HTML custom, no el pin
   estándar). Requiere cargar la librería `marker` y **un `mapId` válido**: sin `mapId`,
-  `AdvancedMarkerElement` no se renderiza.
+  `AdvancedMarkerElement` no se renderiza. `googleMapId()` degrada a `DEMO_MAP_ID` (el id
+  de pruebas de Google) si la env falta: el mapa y los marcadores funcionan, pero con el
+  estilo por defecto (con POIs). Es red de seguridad para desarrollo, no para producción.
+- Los clics del marcador se escuchan con **`gmp-click`** y `gmpClickable: true` (el evento
+  `click` sobre un advanced marker está deprecado).
 - **"Cómo llegar" sin Directions API**: enlace por ubicación a `maps_url` (ya viene en
   la colección) o, como alternativa,
   `https://www.google.com/maps/dir/?api=1&destination=<lat>,<lng>`. Es un enlace
@@ -821,8 +881,8 @@ agrupación y estilo del mapa.
 
 ### Credenciales y variables de entorno
 
-Ambas credenciales **están creadas y en posesión del equipo**; falta incorporarlas al
-proyecto.
+Ambas credenciales están **creadas y ya en el `.env` local**. ⚠️ Queda añadirlas también
+a las apps de Coolify (dev y prod): sin ellas el mapa no carga en el sitio desplegado.
 
 - **API Key** (Google Cloud Console): restricción de aplicación **por dominio** (sitios
   web) y restricción de API limitada a **"Maps JavaScript API"** únicamente.
@@ -838,55 +898,80 @@ proyecto.
 > restricción de API** en Google Cloud, no el secreto de la clave. Conviene añadir
 > también los dominios de preview de Coolify a la lista, o el mapa no cargará en dev.
 
-Nombres propuestos (pendiente de confirmar):
+Nombres definitivos:
 
 | Variable | Valor |
 |---|---|
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | la API key restringida |
 | `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` | el Map ID con el estilo sin POIs |
 
-### Qué hay que quitar (deuda de Leaflet)
+### Deuda de Leaflet — ✅ retirada por completo
 
-| Elemento | Acción |
+| Elemento | Estado |
 |---|---|
-| `leaflet` y `leaflet-gesture-handling` (deps) | eliminar de `package.json` |
-| `@types/leaflet` (devDep) | eliminar |
-| `src/types/leaflet-gesture-handling.d.ts` | borrar |
-| Imports de CSS de Leaflet en `StoreLocator.tsx` | desaparecen |
-| `leaflet-gesture-handling` | innecesario: Google Maps trae `gestureHandling: 'cooperative'` de serie |
-| `src/lib/stores/mock.ts` | borrar al conectar Directus |
-| `src/types/stores.ts` (`Store`, `CHAINS`, `ChainId`) | rehacer contra la forma real de `store_locations` |
-| `src/lib/stores/geo.ts` | **conservar**: Haversine + formateo, agnóstico al origen |
+| `leaflet`, `leaflet-gesture-handling`, `@types/leaflet` | ✅ desinstalados (`pnpm remove`) |
+| `src/types/leaflet-gesture-handling.d.ts` | ✅ borrado |
+| Imports de CSS de Leaflet en `StoreLocator.tsx` | ✅ fuera |
+| `src/lib/stores/mock.ts` | ✅ borrado |
+| `src/types/stores.ts` (`Store`, `CHAINS`, `ChainId`) | ✅ rehecho: `StoreLocationRaw` + `Store` + `cityLabel()` |
+| `src/lib/stores/geo.ts` | **conservado**: Haversine + formateo, agnóstico al origen |
+| `@types/google.maps` | ✅ añadido como devDependency |
 
-### Cambios de datos y de UI
+### Cambios de datos y de UI — ✅ HECHOS (2026-09-04)
 
-- Implementar `getStoreLocations()` en `src/lib/directus/queries.ts` aplicando
-  `statusFilter()` (⚠️ la lectura pública devuelve también los `draft`) y convirtiendo
-  `latitude`/`longitude` de **string a número** en el adaptador. Sin `targetFilter()`:
-  la colección no tiene campo `target`.
-- El **filtro por cadena de supermercado** (`CHAINS`, chips de colores de marca)
-  desaparece: era del maquetado con datos falsos y no existe en la colección real. Lo
-  sustituye el **filtro por ciudad** (`madrid`, `barcelona`, `sevilla`).
-- Añadir el botón **"Cómo llegar"** por punto de venta, usando `maps_url`.
+Ya no bloquean el cambio de mapa; lo que queda de esta sección es solo el render.
+
+- [x] `getStoreLocations()` en `src/lib/directus/queries.ts` (ver "Consumo desde el
+  frontend" en `store_locations`).
+- [x] El **filtro por cadena de supermercado** (`CHAINS`, chips de colores de marca)
+  desapareció: era del maquetado con datos falsos. Lo sustituye el **filtro por
+  ciudad**, derivado de los datos reales.
+- [x] Botón **"Cómo llegar"** por punto de venta, usando `maps_url`.
+
+### Controles del localizador (estado 2026-09-04)
+
+Se simplificó la barra de controles: **fuera el buscador por dirección y fuera los chips
+de ciudad**.
+
+- **Buscador por dirección: eliminado**, y con él `src/app/api/geocode/route.ts` (proxy a
+  Nominatim/OSM), que quedaba sin ningún consumidor. Si vuelve a hacer falta, está en el
+  historial de git.
+- **Filtro por ciudad: retirado a la espera de su rediseño.** Con él se fueron
+  `presentCities`, `handleCity`, el componente `CityChip` y el tipo `CityFilter`.
+  `cityLabel()` **se conserva**: sigue etiquetando la ciudad de cada punto en la lista.
+  Al no haber filtro, `StoreMap` encuadra siempre **todos** los puntos publicados.
+- **"Usar mi ubicación" se mantiene**, ahora como interruptor: el segundo clic quita la
+  ubicación y devuelve la lista a su orden natural (el de Directus: ciudad, nombre).
+
+#### Geolocalización: lo que impone el navegador
+
+La Geolocation API **siempre** pide consentimiento explícito — el navegador muestra su
+propio diálogo, no se puede suprimir ni predecir — y solo funciona en **contexto seguro**
+(HTTPS o `localhost`). Si el usuario deniega, el navegador lo recuerda: no se puede volver
+a preguntar por código, hay que cambiarlo en los ajustes del sitio. Por eso el handler
+distingue los tres desenlaces (`PERMISSION_DENIED`, `POSITION_UNAVAILABLE`, timeout) con
+mensaje propio, y comprueba `window.isSecureContext` antes de pedir nada. Sin ubicación el
+localizador funciona igual: solo se pierde el orden por cercanía y la distancia por punto.
 
 ### Decisiones abiertas
 
-- **`/api/geocode`** (proxy a Nominatim/OSM para "buscar por dirección"): con el filtro
-  por ciudad puede sobrar. Si se quiere conservar la búsqueda libre, decidir entre
-  mantener Nominatim (gratis, ajeno a Google) o usar Geocoding API (de pago, fuera del
-  tier de Maps JS).
-- **"Usar mi ubicación" y orden por cercanía**: si se conservan, `geo.ts` sigue siendo
-  necesario; si no, se puede retirar también.
-- Comportamiento del mapa cuando una ciudad no tiene puntos `published` (hoy Barcelona
-  y Sevilla están en `draft`): ¿se oculta el chip o se muestra vacío?
+- **Rework del filtro por ciudad** (pendiente): decidir forma (chips, desplegable, mapa
+  con vistas predefinidas) y qué hacer con las ciudades sin puntos `published` — hoy en
+  producción se ven Madrid, Barcelona y Sevilla; Málaga y Valencia siguen en `draft`.
+- **Restricción por dominio de la API key** (⚠️ verificado en navegador: falla si falta):
+  con `localhost:3000` sin autorizar, el mapa carga el script pero Google rechaza el
+  render con `RefererNotAllowedMapError`. Hay que tener en la lista de referrers los
+  dominios de producción, los de preview de Coolify y los de desarrollo local.
 
 ## ToDo
 
 - [x] ~~**Email de confirmación de alta**~~ — hecho: plantilla tx id 6
   (`emails/confirmacion.html`), enviada desde `sendConfirmationEmail()`.
 - [ ] **Cerrar el lanzamiento del 10-sep** — ver "Plan de lanzamiento" más abajo.
-- [ ] **Rehacer el mapa de puntos de venta con Google Maps** (abandonar Leaflet) y
-  conectarlo a `store_locations` — ver "Mapa de puntos de venta (Google Maps)".
+- [x] ~~**Rehacer el mapa de puntos de venta con Google Maps**~~ — hecho: `StoreMap.tsx` +
+  `src/lib/maps/google-maps.ts`, Leaflet desinstalado. **Queda añadir
+  `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` y `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` a las apps de
+  Coolify** (dev y prod) antes de desplegar.
 - [ ] **Paquito destacado / edición limitada**: diferenciar visualmente un paquito nuevo o por tiempo limitado del resto del catálogo.
   - **Directus**: añadir campos a `paquitos_data`: `is_new` (bool) y/o `is_limited` (bool) + opcionalmente `badge_label` (string, ej. "Nuevo", "Edición limitada").
   - **Frontend**: variante visual en `PacoCard.tsx` (desktop) y `PacoCardMobileAlt.tsx` (mobile) — puede ser un badge/ribbon, borde especial, animación sutil, etc.

@@ -3,7 +3,7 @@ import CarouselSlide from '@/components/layout/LandingPage/Hero/CarouselSlide';
 import HeroCarousel from '@/components/layout/LandingPage/Hero/HeroCarousel';
 import MainBanner from '@/components/layout/LandingPage/Hero/MainBanner';
 import { ConectorTop } from '@/components/ui/LangingPage/conector';
-import { getCarouselSlides, getLaunchSettings, getPaquitos } from '@/lib/directus/queries';
+import { getCarouselSlides, getLaunchSettings, getPaquitos, getStoreLocations } from '@/lib/directus/queries';
 import { contentEnv } from '@/lib/directus/status';
 import { buildCarouselOrder } from '@/utils/carousel-order';
 import PaquitosGalery from '@/components/layout/LandingPage/PaquitoGalery/paquitosGalery';
@@ -11,7 +11,6 @@ import Encuentralos from '@/components/layout/LandingPage/Encuentralos/Encuentra
 import CuentaAtras from '@/components/layout/LandingPage/CuentaAtras/CuentaAtras';
 // Desactivado por ahora; se reutilizará en el futuro (ver PanelAcordeon.tsx / Panel.tsx).
 // import PanelAcordeon from '@/components/layout/LandingPage/PanelAcordeon/PanelAcordeon';
-import { MOCK_STORES } from '@/lib/stores/mock';
 import AnatomiaAlt from '@/components/layout/LandingPage/Anatomia/AnatomiaAlt';
 import Pacommunity from '@/components/layout/LandingPage/Pacommunity/Pacommunity';
 
@@ -32,7 +31,11 @@ export const metadata: Metadata = {
 export const revalidate = 30;
 
 export default async function Home() {
-  const [slides, paquitos] = await Promise.all([getCarouselSlides(), getPaquitos()]);
+  const [slides, paquitos, stores] = await Promise.all([
+    getCarouselSlides(),
+    getPaquitos(),
+    getStoreLocations(),
+  ]);
   const { featured, normal } = buildCarouselOrder(slides);
   const showLocator =
     contentEnv() === 'development' ||
@@ -61,7 +64,7 @@ export default async function Home() {
       {/* <PanelAcordeon /> */}
       <Pacommunity />
       {/* Lanzado: el mapa de puntos de venta va al final. */}
-      {showLocator && <Encuentralos stores={MOCK_STORES} />}
+      {showLocator && stores.length > 0 && <Encuentralos stores={stores} />}
     </div>
   );
 }
