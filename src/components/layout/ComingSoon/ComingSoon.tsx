@@ -55,7 +55,7 @@ export default function ComingSoon() {
             barsColor="color-mix(in srgb, var(--paco-dark) 50%, transparent)"
           />
           <span className="text-lg md:text-xl mt-4 mb-8">
-            Los paquitos aterrizan el <b>10 de septiembre</b>
+            Los paquitos aterrizan el <b>30 de septiembre</b>
           </span>
           <NotifyCta />
         </Reveal>

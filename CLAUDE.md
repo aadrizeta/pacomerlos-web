@@ -542,7 +542,7 @@ Usuario → ① POST /api/notify { email, website(honeypot) }
        → Listmonk POST /api/subscribers: alta en lista 3 (creds server-only)
        → Listmonk POST /api/tx: correo de bienvenida (plantilla 6), best-effort
 
-Cron   → ② Directus Flow programado (10-sep 07:00 UTC = 09:00 Madrid)
+Cron   → ② Directus Flow programado (30-sep 07:00 UTC = 09:00 Madrid)
        → launch_status = "launched" en site_settings
        → PUT /api/campaigns/4/status {"status":"running"} en Listmonk
        → campaign_sent = true (guarda anti-reenvío)
@@ -699,7 +699,7 @@ done
 | Contenedor Listmonk | Europe/Madrid |
 
 El cron de un Directus Flow se evalúa **en UTC**. Lanzamiento acordado:
-**10-sep-2026, 09:00 hora de Madrid = 07:00 UTC**.
+**30-sep-2026, 09:00 hora de Madrid = 07:00 UTC**.
 
 ### Comandos de verificación (VPS)
 
@@ -745,7 +745,7 @@ docker exec directus-database-1 sh -c "mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" 
 
 - [x] ~~**Email de confirmación de alta**~~ — hecho: plantilla tx id 6
   (`emails/confirmacion.html`), enviada desde `sendConfirmationEmail()`.
-- [ ] **Cerrar el lanzamiento del 10-sep** — ver "Plan de lanzamiento" más abajo.
+- [ ] **Cerrar el lanzamiento del 30-sep** — ver "Plan de lanzamiento" más abajo.
 - [ ] **Paquito destacado / edición limitada**: diferenciar visualmente un paquito nuevo o por tiempo limitado del resto del catálogo.
   - **Directus**: añadir campos a `paquitos_data`: `is_new` (bool) y/o `is_limited` (bool) + opcionalmente `badge_label` (string, ej. "Nuevo", "Edición limitada").
   - **Frontend**: variante visual en `PacoCard.tsx` (desktop) y `PacoCardMobileAlt.tsx` (mobile) — puede ser un badge/ribbon, borde especial, animación sutil, etc.
@@ -753,7 +753,14 @@ docker exec directus-database-1 sh -c "mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" 
   - **Query**: actualizar `getPaquitos()` en `src/lib/directus/queries.ts` para incluir los nuevos campos en el `fields[]`.
 - [ ] **Diseñar imagen OG** (`public/img/PACOSJUNTOS.png`): imagen de 1200×630 px para la previsualización al compartir enlaces en redes sociales. Referenciada en `og:image` de `page.tsx` y `sabores/page.tsx`. Debe verse bien en proporción 1.91:1; evitar texto importante en los bordes.
 
-## Plan de lanzamiento — 10-sep-2026, 09:00 Madrid (07:00 UTC)
+## Plan de lanzamiento — 30-sep-2026, 09:00 Madrid (07:00 UTC)
+
+> 📅 **Fecha aplazada (2026-09-04)**: el lanzamiento se movió del **10-sep** al
+> **30-sep**. Ya está actualizado en el repo (cuenta atrás, copys de `ComingSoon`
+> y `CuentaAtras`, `emails/confirmacion.html` y este documento). **Falta cambiar el
+> cron del Directus Flow en el VPS** a `0 0 7 30 9 *` — mientras no se toque, el
+> flow sigue armado para el 10-sep. El 30-sep Madrid sigue en CEST (UTC+2; el
+> horario de verano acaba el 25-oct), así que 09:00 Madrid = 07:00 UTC igual que antes.
 
 Objetivo: que a las 09:00 hora de Madrid, **sin intervención manual**, la web se
 revele y salga la campaña 4 a la lista 3.
@@ -785,11 +792,11 @@ no existe**: el día D no habría enviado nada. Queda **`inactive`** y renombrad
 
 Flow vigente: **`Lanzamiento Paco Merlos`**, id `80088468-97b6-4468-ad16-0c493cfa7ccb`,
 `status: active`, `trigger: schedule`, `accountability: all`,
-`options: {"cron":"0 0 7 10 9 *"}`.
+`options: {"cron":"0 0 7 30 9 *"}`.
 
 Cron de **6 campos** (`seg min hora día mes dow`), **confirmado empíricamente** con un
 flow sonda (`*/10 * * * * *` + Log to Console → salía cada 10 s en
-`docker logs directus-directus-1`). Se evalúa en **UTC** → dispara el 10-sep a las
+`docker logs directus-directus-1`). Se evalúa en **UTC** → dispara el 30-sep a las
 07:00 UTC = 09:00 Madrid.
 
 Operaciones, en cadena por la salida de éxito (la web se revela **antes** de enviar,
@@ -824,7 +831,7 @@ module.exports = async function (data) {
    **`token notify_api:<TOKEN>`** entero (17 + 32 = **49 caracteres**). Mal puesta,
    Listmonk responde 401, la cadena se corta y **la web se revela sin enviar correo**.
 2. **Tabulador invisible en el cron.** Al pegar la expresión se coló un `\t` inicial
-   (`{"cron":"\t0 0 7 10 9 *"}`). Escribir el campo a mano, sin pegar.
+   (`{"cron":"\t0 0 7 30 9 *"}`). Escribir el campo a mano, sin pegar.
 3. **`permissions` inconsistente.** `mark_sent` se guardó con `$trigger`; con trigger
    `schedule` no hay usuario detrás, así que la escritura puede denegarse y dejar
    `campaign_sent` en `false`. Las cuatro operaciones deben ir con **`$full`**.
@@ -834,7 +841,7 @@ module.exports = async function (data) {
 ⚠️ `emitEvents:false` en las dos escrituras es obligatorio: evita bucles si alguien
 vuelve a añadir un flow con trigger `event` sobre `site_settings`.
 
-⚠️ El cron se repetiría **cada año** el 10-sep. El `gate` lo hace inofensivo
+⚠️ El cron se repetiría **cada año** el 30-sep. El `gate` lo hace inofensivo
 (`campaign_sent` ya será `true`), pero conviene **desactivar el flow** tras el
 lanzamiento.
 
@@ -889,7 +896,7 @@ gastar la campaña real.
 
 Hacerlo en franja de bajo tráfico.
 
-### Fase 3 — Armado (D-1, 9-sep)
+### Fase 3 — Armado (D-1, 29-sep)
 
 Checklist de estado, verificable con los comandos de "Comandos de verificación":
 
@@ -898,12 +905,12 @@ Checklist de estado, verificable con los comandos de "Comandos de verificación"
       disparo es del Flow, dos relojes serían doble envío)
 - [ ] Campaña 4 → lista **3**; body idéntico a `emails/lanzamiento.html`
 - [ ] Lista 3 con los suscriptores esperados, todos `confirmed`
-- [ ] Flow `Lanzamiento Paco Merlos` **activo**, cron `0 0 7 10 9 *`, campaña **4**
+- [ ] Flow `Lanzamiento Paco Merlos` **activo**, cron `0 0 7 30 9 *`, campaña **4**
 - [ ] No queda ningún otro flow activo sobre `site_settings`
 - [ ] App prod: `NEXT_PUBLIC_CONTENT_ENV=production`, `LISTMONK_LIST_ID=3`
 - [ ] `main` mergeado a `prod` y desplegado (congelar cambios)
 
-### Fase 4 — Día D (10-sep, 09:00)
+### Fase 4 — Día D (30-sep, 09:00)
 
 Estar delante entre 08:55 y 09:15.
 

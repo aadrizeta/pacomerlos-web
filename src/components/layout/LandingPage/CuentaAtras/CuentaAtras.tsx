@@ -7,7 +7,7 @@ import CtaButton from '@/components/ui/Button';
 /**
  * Sección de cuenta atrás que sustituye al mapa "Dónde encontrarlos" mientras el
  * sitio está en `coming_soon`. Muestra el tiempo restante hasta el lanzamiento
- * (10 de septiembre) en días/horas/minutos/segundos. Reutiliza el mismo marco de
+ * (30 de septiembre) en días/horas/minutos/segundos. Reutiliza el mismo marco de
  * sección (fondo crema + SectionHeader + Reveal) que `Encuentralos`.
  */
 export default function CuentaAtras() {
@@ -33,7 +33,7 @@ export default function CuentaAtras() {
             barsColor="color-mix(in srgb, var(--paco-dark) 50%, transparent)"
           // titleSizeOverride="clamp(2.25rem, 9.4vw, 8rem)"
           />
-          <span className="taxt-lg md:text-xl mb-10">Los paquitos aterrizan el <b>10 de septiembre</b></span>
+          <span className="taxt-lg md:text-xl mb-10">Los paquitos aterrizan el <b>30 de septiembre</b></span>
           <CtaButton label="¡Avísame!" href="#newsletter" />
         </Reveal>
 
